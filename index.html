@@ -286,7 +286,17 @@
             </div>
           </div>
 
-          <form class="contact-form reveal" id="contactForm">
+          <form
+            class="contact-form reveal"
+            id="contactForm"
+            name="contact"
+            method="POST"
+            data-netlify="true"
+            netlify-honeypot="bot-field"
+          >
+            <input type="hidden" name="form-name" value="contact" />
+            <p class="hp-field"><label>Nevyplňujte, pokud jste člověk: <input name="bot-field" /></label></p>
+
             <div class="form-row">
               <div class="form-field">
                 <label for="name">Jméno</label>
@@ -310,8 +320,11 @@
               </div>
             </div>
             <button type="submit" class="btn btn-primary" style="width:100%;">Odeslat poptávku</button>
-            <p class="form-note">Odesláním se otevře e-mailový klient s předvyplněnou zprávou na contact.sonity@gmail.com.</p>
-            <p class="form-status" id="formStatus"></p>
+            <p class="form-note">
+              Nebo nám napište přímo na
+              <a href="mailto:contact.sonity@gmail.com">contact.sonity@gmail.com</a>.
+            </p>
+            <p class="form-status" id="formStatus" role="status"></p>
           </form>
         </div>
       </div>

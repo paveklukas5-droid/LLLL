@@ -39,33 +39,62 @@ if ("IntersectionObserver" in window && revealEls.length) {
   revealEls.forEach((el) => el.classList.add("is-visible"));
 }
 
-// Contact form -> mailto handoff
+// Contact form -> Netlify Forms (AJAX), with a mailto fallback if the
+// request itself fails (e.g. running outside Netlify, offline, etc.)
 const contactForm = document.getElementById("contactForm");
 const formStatus = document.getElementById("formStatus");
+
+function encodeFormData(form) {
+  return new URLSearchParams(new FormData(form)).toString();
+}
+
+function mailtoFallback(form) {
+  const name = form.name.value.trim();
+  const email = form.email.value.trim();
+  const company = form.company.value.trim();
+  const message = form.message.value.trim();
+
+  const subject = encodeURIComponent(`Poptávka z webu — ${name}`);
+  const bodyLines = [
+    `Jméno: ${name}`,
+    `E-mail: ${email}`,
+    company ? `Firma: ${company}` : null,
+    "",
+    message,
+  ].filter(Boolean);
+  const body = encodeURIComponent(bodyLines.join("\n"));
+
+  window.location.href = `mailto:contact.sonity@gmail.com?subject=${subject}&body=${body}`;
+}
 
 if (contactForm) {
   contactForm.addEventListener("submit", (e) => {
     e.preventDefault();
 
-    const name = contactForm.name.value.trim();
-    const email = contactForm.email.value.trim();
-    const company = contactForm.company.value.trim();
-    const message = contactForm.message.value.trim();
-
-    const subject = encodeURIComponent(`Poptávka z webu — ${name}`);
-    const bodyLines = [
-      `Jméno: ${name}`,
-      `E-mail: ${email}`,
-      company ? `Firma: ${company}` : null,
-      "",
-      message,
-    ].filter(Boolean);
-    const body = encodeURIComponent(bodyLines.join("\n"));
-
-    window.location.href = `mailto:contact.sonity@gmail.com?subject=${subject}&body=${body}`;
-
     if (formStatus) {
-      formStatus.textContent = "Otevírá se váš e-mailový klient s předvyplněnou zprávou…";
+      formStatus.textContent = "Odesílám…";
+      formStatus.style.color = "";
     }
+
+    fetch("/", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: encodeFormData(contactForm),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error(`Netlify form submit failed: ${res.status}`);
+        if (formStatus) {
+          formStatus.textContent = "Díky! Poptávku jsme přijali a ozveme se vám co nejdřív.";
+        }
+        contactForm.reset();
+      })
+      .catch(() => {
+        // Not deployed on Netlify (or the request failed) — fall back to
+        // opening the user's e-mail client with a prefilled message.
+        if (formStatus) {
+          formStatus.textContent = "Otevírá se váš e-mailový klient s předvyplněnou zprávou…";
+        }
+        mailtoFallback(contactForm);
+      });
   });
 }
