@@ -1,18 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -20 120 120" role="img" aria-label="Sonity logo">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-5 -15 115 130" role="img" aria-label="Sonity logo">
   <defs>
     <linearGradient id="sonityGradient" x1="10%" y1="95%" x2="90%" y2="5%">
-      <stop offset="0%" stop-color="#0fae5a"/>
-      <stop offset="55%" stop-color="#34e089"/>
-      <stop offset="100%" stop-color="#b9ffd9"/>
+      <stop offset="0%" stop-color="#159a56"/>
+      <stop offset="55%" stop-color="#34d17d"/>
+      <stop offset="100%" stop-color="#8ff2b8"/>
     </linearGradient>
   </defs>
 
-  <text x="47" y="83" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="92"
-        fill="url(#sonityGradient)">S</text>
-
-  <path d="M67 28 L100 -8"
-        fill="none" stroke="url(#sonityGradient)" stroke-width="17"
+  <path d="M68 25 C25 25 25 60 46 60 C68 60 68 95 25 95"
+        fill="none" stroke="url(#sonityGradient)" stroke-width="18"
         stroke-linecap="round"/>
-  <polygon points="100,-8 94.2,22 70.6,0.4" fill="url(#sonityGradient)"/>
+
+  <path d="M68 25 L75.7 18.6"
+        fill="none" stroke="url(#sonityGradient)" stroke-width="18"
+        stroke-linecap="round"/>
+
+  <polygon points="101.7,-3.3 87.9,33.1 63.4,4" fill="url(#sonityGradient)"/>
 </svg>
