@@ -1,0 +1,207 @@
+{
+  "_comment": "VAPI Tools pro LOMAX servisního voicebota. Vloz do Assistant > Tools (nebo pres API POST /tool). URL webhooku nahrad svym Make.com Custom Webhook URL.",
+
+  "tools": [
+    {
+      "type": "function",
+      "async": false,
+      "server": {
+        "url": "https://hook.eu2.make.com/NAHRAD_SVYM_WEBHOOK_KLICEM",
+        "timeoutSeconds": 25,
+        "headers": {
+          "x-api-key": "NAHRAD_SDILENYM_TAJEMSTVIM"
+        }
+      },
+      "messages": [
+        {
+          "type": "request-start",
+          "content": "Zakládám vám servisní poptávku, moment prosím.",
+          "blocking": false
+        },
+        {
+          "type": "request-complete",
+          "content": "Hotovo, poptávku mám odeslanou."
+        },
+        {
+          "type": "request-failed",
+          "content": "Omlouvám se, systém mi teď poptávku nepřijal. Zkusím to ještě jednou."
+        },
+        {
+          "type": "request-response-delayed",
+          "content": "Ještě to zpracovávám, děkuji za trpělivost.",
+          "timingMilliseconds": 8000
+        }
+      ],
+      "function": {
+        "name": "odeslat_servisni_poptavku",
+        "description": "Odešle kompletní servisní / reklamační poptávku zákazníka do systému LOMAX, který ji e-mailem předá servisnímu oddělení a nejbližšímu autorizovanému zastoupení. Volej AŽ POTÉ, co jsi zákazníkovi zrekapitulovala údaje, on je potvrdil a dal souhlas se zpracováním. Volej maximálně jednou za hovor (kromě jednoho opakování při chybě). Pole, která nemáš, posílej jako prázdný řetězec - nikdy je nevymýšlej.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "jmeno_prijmeni": {
+              "type": "string",
+              "description": "Celé jméno a příjmení volajícího, tak jak ho nadiktoval. Např. 'Jan Novák'."
+            },
+            "telefon": {
+              "type": "string",
+              "description": "Telefonní číslo pro zpětné volání, jen číslice bez mezer, případně s předvolbou. Např. '777123456' nebo '+420777123456'. Musí být ověřeno přečtením zpět."
+            },
+            "email": {
+              "type": "string",
+              "description": "E-mail zákazníka pro potvrzení a zaslání fotografií. Prázdný řetězec, pokud ho zákazník nechce uvést."
+            },
+            "adresa_ulice_cp": {
+              "type": "string",
+              "description": "Ulice a číslo popisné adresy REALIZACE (kde je produkt namontovaný), ne fakturační adresa."
+            },
+            "adresa_mesto": {
+              "type": "string",
+              "description": "Město / obec realizace."
+            },
+            "adresa_psc": {
+              "type": "string",
+              "description": "PSČ realizace, 5 číslic bez mezery. KLÍČOVÉ pro směrování na nejbližší zastoupení."
+            },
+            "typ_pozadavku": {
+              "type": "string",
+              "enum": ["reklamace", "servis", "servisni_prohlidka", "jine"],
+              "description": "reklamace = zákazník to sám nazývá reklamací nebo jde o vadu krátce po montáži; servis = běžná porucha; servisni_prohlidka = chce pravidelnou roční prohlídku; jine = např. urgence již podané reklamace."
+            },
+            "typ_produktu": {
+              "type": "string",
+              "enum": [
+                "garazova_vrata_sekcni",
+                "garazova_vrata_posuvna",
+                "garazova_vrata_rolovaci",
+                "garazova_vrata_dvoukridla",
+                "predokenni_roleta",
+                "venkovni_zaluzie",
+                "vchodove_dvere",
+                "okno",
+                "sit_proti_hmyzu",
+                "rolovaci_mriz",
+                "pohon_nebo_ovladac",
+                "jine"
+              ],
+              "description": "Kategorie produktu, kterého se závada týká."
+            },
+            "model_rada": {
+              "type": "string",
+              "description": "Modelová řada, pokud ji zákazník zná. Např. 'Home', 'Delta', 'Excellent', 'Praktik', 'LT 50', 'Z-90', 'C-80', 'FABO'. Jinak prázdný řetězec."
+            },
+            "pohon_znacka": {
+              "type": "string",
+              "description": "Značka pohonu, pokud je známa: Marantec, Somfy, Selve, Elero, jiná, nebo 'bez pohonu'. Jinak prázdný řetězec."
+            },
+            "popis_zavady": {
+              "type": "string",
+              "description": "Konkrétní popis závady vlastními slovy zákazníka. Ne 'nefunguje to', ale např. 'vrata se zastaví asi 20 cm nad zemí a vyjedou zpět nahoru, bliká jedna fotobuňka'."
+            },
+            "technicke_detaily": {
+              "type": "string",
+              "description": "Odpovědi na diagnostické otázky: stav fotobuněk, vyměněná baterie v ovladači, reakce nástěnného tlačítka, zvuk motoru, zkoušené nouzové odjištění apod. Jinak prázdný řetězec."
+            },
+            "kdy_zacalo": {
+              "type": "string",
+              "description": "Kdy se závada poprvé objevila, slovy zákazníka. Např. 'asi před třemi dny', 'po té bouřce minulý týden'."
+            },
+            "opakovana_zavada": {
+              "type": "boolean",
+              "description": "true, pokud zákazník uvedl, že se stejný problém už dříve řešil."
+            },
+            "bezpecnostni_riziko": {
+              "type": "boolean",
+              "description": "true při prasklé pružině, utrženém lanku, uvolněné či visící lamele, křivém nebo vypadlém křídle, samovolném sjíždění vrat, jiskření nebo zápachu spáleniny."
+            },
+            "priorita": {
+              "type": "string",
+              "enum": ["vysoka", "stredni", "nizka"],
+              "description": "vysoka = bezpečnostní riziko nebo objekt nelze zabezpečit (vrata nejdou zavřít); stredni = produkt nefunkční, ale zabezpečený; nizka = kosmetická vada, hluk, drobnost."
+            },
+            "rok_montaze": {
+              "type": "string",
+              "description": "Přibližný rok montáže, např. '2019'. Prázdný řetězec, pokud zákazník neví."
+            },
+            "cislo_zakazky": {
+              "type": "string",
+              "description": "Číslo zakázky / objednávky / faktury, pokud ho zákazník má. Jinak prázdný řetězec."
+            },
+            "kdo_montoval": {
+              "type": "string",
+              "description": "Kdo produkt montoval - zastoupení LOMAX, jiná firma, svépomocí, nebo prázdný řetězec."
+            },
+            "dostupnost": {
+              "type": "string",
+              "description": "Kdy je zákazník k zastižení / kdy se mu hodí návštěva technika. Např. 'všední dny odpoledne po 15:00'."
+            },
+            "ma_fotografie": {
+              "type": "boolean",
+              "description": "true, pokud zákazník uvedl, že fotografii závady má nebo ji pořídí a pošle."
+            },
+            "souhlas_gdpr": {
+              "type": "boolean",
+              "description": "true pouze pokud zákazník výslovně souhlasil s předáním údajů servisnímu partnerovi. Bez souhlasu poptávku neodesílej."
+            },
+            "shrnuti_pro_technika": {
+              "type": "string",
+              "description": "1-2 věty pro technika: co se stalo a co si nejspíš bude potřebovat vzít s sebou."
+            },
+            "prepis_klicovych_bodu": {
+              "type": "string",
+              "description": "2-4 doslovné citace zákazníka o závadě, oddělené středníkem. Technikovi pomůžou víc než parafráze."
+            },
+            "poznamka": {
+              "type": "string",
+              "description": "Cokoli dalšího podstatného: volající není majitel, název firmy/SVJ, urgence, zákazník si není jistý výrobcem, zajímá ho cena dopředu apod."
+            }
+          },
+          "required": [
+            "jmeno_prijmeni",
+            "telefon",
+            "adresa_ulice_cp",
+            "adresa_mesto",
+            "adresa_psc",
+            "typ_pozadavku",
+            "typ_produktu",
+            "popis_zavady",
+            "priorita",
+            "bezpecnostni_riziko",
+            "souhlas_gdpr",
+            "shrnuti_pro_technika"
+          ]
+        }
+      }
+    },
+
+    {
+      "type": "transferCall",
+      "_comment": "Volitelné. Zapni jen pokud máte živou linku. Jinak tento nástroj z konfigurace odstraň a v promptu zůstane pouze předání čísla na recepci.",
+      "destinations": [
+        {
+          "type": "number",
+          "number": "+420519304040",
+          "message": "Přepojím vás na kolegy na recepci, moment prosím.",
+          "description": "Recepce LOMAX, pracovní doba pondělí až pátek 8:00-16:00."
+        }
+      ],
+      "function": {
+        "name": "prepojit_na_operatora",
+        "description": "Přepojí hovor na živého operátora recepce LOMAX. Použij POUZE když zákazník výslovně trvá na mluvení s člověkem, nebo při akutní bezpečnostní situaci v pracovní době (po-pá 8:00-16:00)."
+      }
+    },
+
+    {
+      "type": "endCall",
+      "function": {
+        "name": "ukoncit_hovor",
+        "description": "Ukončí hovor. Volej až po rozloučení se zákazníkem, nikdy uprostřed jeho věty. Použij také, když se nedaří navázat komunikaci (opakované ticho) nebo když volající není zákazník LOMAX."
+      },
+      "messages": [
+        {
+          "type": "request-start",
+          "content": "Děkuji za zavolání a přeji hezký den. Na shledanou."
+        }
+      ]
+    }
+  ]
+}

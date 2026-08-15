@@ -1,0 +1,182 @@
+{
+  "_comment": "Kompletní konfigurace VAPI asistenta pro LOMAX servis. Do 'model.messages[0].content' vloz CELY obsah souboru 01-system-prompt.md. Modely/hlasy si over v aktualnim VAPI dropdownu - nazvy se meni.",
+
+  "name": "LOMAX – Servis a reklamace (CZ)",
+
+  "firstMessage": "Dobrý den, tady Klára ze servisu LOMAX. Jak vám můžu pomoci?",
+  "firstMessageMode": "assistant-speaks-first",
+
+  "model": {
+    "provider": "anthropic",
+    "model": "claude-sonnet-5",
+    "_poznamka_model": "Doporučené pořadí pro češtinu + spolehlivé volání nástrojů: claude-sonnet-5 > gpt-4.1 > claude-haiku-4-5 (nejnižší latence, ale hůř drží dlouhý prompt). Vyber to, co ti VAPI aktuálně nabízí.",
+    "temperature": 0.3,
+    "maxTokens": 350,
+    "emotionRecognitionEnabled": true,
+    "numFastTurns": 1,
+    "toolIds": [
+      "ID_NASTROJE_odeslat_servisni_poptavku",
+      "ID_NASTROJE_ukoncit_hovor"
+    ],
+    "messages": [
+      {
+        "role": "system",
+        "content": ">>> SEM VLOZ CELY OBSAH SOUBORU 01-system-prompt.md <<<"
+      }
+    ]
+  },
+
+  "transcriber": {
+    "provider": "deepgram",
+    "model": "nova-2",
+    "language": "cs",
+    "smartFormat": true,
+    "endpointing": 220,
+    "_poznamka_transcriber": "Alternativy pro češtinu, otestuj co ti sedne nejlíp: (1) provider 'azure', language 'cs-CZ' – velmi spolehlivé u čísel a PSČ; (2) provider 'elevenlabs', model 'scribe_v1' – nejlepší přesnost u příjmení, o něco vyšší latence. Češtinu testuj VŽDY na reálném telefonním hovoru, ne v prohlížeči."
+  },
+
+  "voice": {
+    "provider": "azure",
+    "voiceId": "cs-CZ-VlastaNeural",
+    "speed": 1.0,
+    "_alternativa_elevenlabs": {
+      "provider": "11labs",
+      "voiceId": "NAHRAD_ID_CESKEHO_HLASU",
+      "model": "eleven_flash_v2_5",
+      "stability": 0.5,
+      "similarityBoost": 0.75,
+      "optimizeStreamingLatency": 3,
+      "_poznamka": "Zní přirozeněji, ale u českých čísel a diakritiky občas ujede výslovnost. Azure cs-CZ (Vlasta = ženský, Antonín = mužský) je pro telefonní servisní linku sázka na jistotu."
+    },
+    "chunkPlan": {
+      "enabled": true,
+      "minCharacters": 30
+    }
+  },
+
+  "startSpeakingPlan": {
+    "waitSeconds": 0.5,
+    "smartEndpointingEnabled": true,
+    "transcriptionEndpointingPlan": {
+      "onPunctuationSeconds": 0.15,
+      "onNoPunctuationSeconds": 1.4,
+      "onNumberSeconds": 0.6
+    },
+    "_poznamka": "onNumberSeconds je klíčové – zákazník diktuje telefon a PSČ po skupinách a bot ho nesmí uprostřed přerušit."
+  },
+
+  "stopSpeakingPlan": {
+    "numWords": 2,
+    "voiceSeconds": 0.2,
+    "backoffSeconds": 1.0
+  },
+
+  "messagePlan": {
+    "idleMessages": [
+      "Jste tam ještě, prosím?",
+      "Slyšíme se?",
+      "Haló, potřebujete ještě něco?"
+    ],
+    "idleTimeoutSeconds": 9,
+    "idleMessageMaxSpokenCount": 2,
+    "silenceTimeoutMessage": "Zdá se, že se neslyšíme. Zkuste nám prosím zavolat znovu. Na shledanou."
+  },
+
+  "silenceTimeoutSeconds": 30,
+  "maxDurationSeconds": 900,
+  "backgroundSound": "off",
+  "backchannelingEnabled": false,
+  "backgroundDenoisingEnabled": true,
+  "modelOutputInMessagesEnabled": true,
+
+  "endCallFunctionEnabled": true,
+  "endCallMessage": "Děkuji za zavolání a přeji hezký den. Na shledanou.",
+  "endCallPhrases": [
+    "na shledanou",
+    "nashledanou",
+    "hezký den"
+  ],
+
+  "voicemailDetection": {
+    "provider": "vapi",
+    "backoffPlan": {
+      "startAtSeconds": 5,
+      "frequencySeconds": 5,
+      "maxRetries": 4
+    }
+  },
+  "voicemailMessage": "",
+
+  "analysisPlan": {
+    "summaryPlan": {
+      "enabled": true,
+      "messages": [
+        {
+          "role": "system",
+          "content": "Shrň telefonát v češtině do maximálně 4 vět: kdo volal, jakého produktu se problém týká, co je závada, a zda byla servisní poptávka odeslána. Piš věcně, bez omáčky."
+        }
+      ]
+    },
+    "successEvaluationPlan": {
+      "enabled": true,
+      "rubric": "PassFail",
+      "messages": [
+        {
+          "role": "system",
+          "content": "Vyhodnoť jako PASS pouze pokud: (a) asistentka zjistila jméno, telefon, adresu včetně PSČ a konkrétní popis závady, (b) údaje zákazníkovi zrekapitulovala a on je potvrdil, (c) zákazník dal souhlas se zpracováním, (d) byl zavolán nástroj odeslat_servisni_poptavku. FAIL, pokud asistentka slíbila cenu, termín nebo uznání reklamace, nebo pokud radila zásah do pružin, lanek či elektroinstalace. Volání, kde se ukázalo, že nejde o produkt LOMAX nebo šlo o obchodní dotaz, hodnoť jako PASS, pokud byl zákazník správně nasměrován."
+        }
+      ]
+    },
+    "structuredDataPlan": {
+      "enabled": true,
+      "_poznamka": "Záchranná síť: i kdyby model zapomněl zavolat nástroj, tahle data přijdou v end-of-call-report do Make a nic se neztratí.",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "jmeno_prijmeni": { "type": "string" },
+          "telefon": { "type": "string" },
+          "email": { "type": "string" },
+          "adresa_ulice_cp": { "type": "string" },
+          "adresa_mesto": { "type": "string" },
+          "adresa_psc": { "type": "string" },
+          "typ_produktu": { "type": "string" },
+          "popis_zavady": { "type": "string" },
+          "priorita": { "type": "string" },
+          "bezpecnostni_riziko": { "type": "boolean" },
+          "poptavka_odeslana": {
+            "type": "boolean",
+            "description": "true pouze pokud byl v hovoru skutečně zavolán nástroj odeslat_servisni_poptavku"
+          },
+          "duvod_neodeslani": {
+            "type": "string",
+            "description": "Pokud poptávka odeslána nebyla, jednou větou proč (zákazník zavěsil, nešlo o produkt LOMAX, obchodní dotaz, nedal souhlas, technická chyba)."
+          }
+        }
+      }
+    }
+  },
+
+  "serverMessages": [
+    "end-of-call-report",
+    "status-update"
+  ],
+  "server": {
+    "url": "https://hook.eu2.make.com/NAHRAD_DRUHYM_WEBHOOKEM_PRO_REPORTY",
+    "timeoutSeconds": 20
+  },
+
+  "artifactPlan": {
+    "recordingEnabled": true,
+    "transcriptPlan": {
+      "enabled": true,
+      "assistantName": "Klára",
+      "userName": "Zákazník"
+    },
+    "_poznamka_gdpr": "Nahrávání hovoru je zpracování osobních údajů. Buď ho vypni (recordingEnabled: false), nebo doplň do firstMessage větu o nahrávání – viz README, sekce GDPR."
+  },
+
+  "compliancePlan": {
+    "hipaaEnabled": false,
+    "pciEnabled": false
+  }
+}
