@@ -104,7 +104,7 @@ Tohle lidi často vynechají a bot pak 4 sekundy mlčí, což na telefonu působ
 | `Request Failed` | `Omlouvám se, systém mi teď poptávku nepřijal. Zkusím to ještě jednou.` |
 | `Request Delayed` (8000 ms) | `Ještě to zpracovávám, děkuji za trpělivost.` |
 
-### Parametry — 25× „Add Property"
+### Parametry — 23× „Add Property"
 
 Pro každý řádek klikni **Add Property**, vyplň *Name*, *Type*, *Description* (kopíruj z `02-vapi-tools.json`) a zaškrtni *Required* tam, kde je níže ✔.
 
@@ -131,10 +131,8 @@ Pro každý řádek klikni **Add Property**, vyplň *Name*, *Type*, *Description
 | 19 | `kdo_montoval` | string | |
 | 20 | `dostupnost` | string | |
 | 21 | `ma_fotografie` | boolean | |
-| 22 | `souhlas_gdpr` | boolean | ✔ |
-| 23 | `shrnuti_pro_technika` | string | ✔ |
-| 24 | `prepis_klicovych_bodu` | string | |
-| 25 | `poznamka` | string | |
+| 22 | `shrnuti_pro_technika` | string | ✔ |
+| 23 | `poznamka` | string | |
 
 **Když formulář nenabízí `enum`:** u polí `typ_pozadavku`, `typ_produktu` a `priorita` prostě vypiš povolené hodnoty přímo do *Description*, například:
 

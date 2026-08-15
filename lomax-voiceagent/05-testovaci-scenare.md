@@ -15,7 +15,6 @@ Odpovídej ochotně na všechno, e-mail nadiktuj s háčkem v příjmení.
 - ✅ Zeptá se max. 1–2 diagnostické otázky
 - ✅ Získá jméno, telefon, ulici, město, **PSČ**, produkt, popis
 - ✅ Přečte zpět telefon i adresu
-- ✅ Vyžádá si souhlas se zpracováním
 - ✅ Zavolá nástroj a řekne, že poptávku odeslal
 - ❌ Nesmí slíbit termín ani cenu
 
@@ -90,12 +89,12 @@ Odpovídej ochotně na všechno, e-mail nadiktuj s háčkem v příjmení.
 
 ---
 
-## T9 — Zákazník nedá souhlas
-**Ty říkáš:** „Ne, nesouhlasím s předáváním mých údajů nikomu."
+## T9 — Zákazník se ptá, co s jeho údaji
+**Ty říkáš:** „A komu ty moje údaje předáte?"
 
-- ✅ Poptávku **neodešle**
-- ✅ Dá telefon na recepci a slušně ukončí
-- ❌ Nesmí nástroj zavolat se `souhlas_gdpr: false`
+- ✅ Krátce vysvětlí, že jdou servisnímu oddělení a nejbližšímu zastoupení kvůli opravě
+- ✅ Plynule pokračuje v poptávce, nedělá z toho téma na tři minuty
+- ❌ Nesmí slíbit nic o mazání dat — na to je info@lomax.cz
 
 ---
 

@@ -120,9 +120,7 @@ Text v `result` bot uslyší a může ho zákazníkovi převyprávět — proto 
     <tr><td><b>Fotografie</b></td><td>{{if(ma_fotografie; "Zákazník je pošle odpovědí na potvrzovací e-mail"; "nemá")}}</td></tr>
 
     <tr style="background:#fffbe6"><td><b>Shrnutí pro technika</b></td><td>{{shrnuti_pro_technika}}</td></tr>
-    <tr><td><b>Citace zákazníka</b></td><td><i>{{prepis_klicovych_bodu}}</i></td></tr>
     <tr><td><b>Poznámka</b></td><td>{{ifempty(poznamka; "–")}}</td></tr>
-    <tr><td><b>Souhlas GDPR</b></td><td>{{if(souhlas_gdpr; "udělen v hovoru"; "NEUDĚLEN – nekontaktovat, ověřit!")}}</td></tr>
   </table>
 
   <p style="font-size:12px;color:#888;margin-top:16px">
@@ -163,7 +161,7 @@ Text v `result` bot uslyší a může ho zákazníkovi převyprávět — proto 
   LOMAX &amp; Co s.r.o., Bořetice 417, 691 08<br>
   info@lomax.cz · www.lomax.cz</p>
 
-  <p style="font-size:11px;color:#999">Vaše údaje zpracováváme za účelem vyřízení servisního požadavku na základě vašeho souhlasu uděleného v telefonním hovoru.</p>
+  <p style="font-size:11px;color:#999">Vaše údaje zpracováváme výhradně za účelem vyřízení tohoto servisního požadavku. Více v zásadách ochrany osobních údajů na lomax.cz.</p>
 </div>
 ```
 
@@ -233,9 +231,7 @@ curl -X POST "https://hook.eu2.make.com/TVUJ_WEBHOOK" \
           "kdo_montoval": "zastoupení LOMAX",
           "dostupnost": "všední dny odpoledne po 15:00",
           "ma_fotografie": true,
-          "souhlas_gdpr": true,
           "shrnuti_pro_technika": "Sekční vrata Delta s pohonem Marantec se nedovírají, pravděpodobně rozladěné nebo znečištěné fotobuňky. Vzít náhradní pár fotobuněk.",
-          "prepis_klicovych_bodu": "zastaví se kousek nad zemí a jede to zpátky; jedna tam bliká; je to asi tři dny",
           "poznamka": ""
         }
       }

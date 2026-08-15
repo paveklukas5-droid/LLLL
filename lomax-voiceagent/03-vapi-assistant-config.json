@@ -123,7 +123,7 @@
       "messages": [
         {
           "role": "system",
-          "content": "Vyhodnoť jako PASS pouze pokud: (a) asistentka zjistila jméno, telefon, adresu včetně PSČ a konkrétní popis závady, (b) údaje zákazníkovi zrekapitulovala a on je potvrdil, (c) zákazník dal souhlas se zpracováním, (d) byl zavolán nástroj odeslat_servisni_poptavku. FAIL, pokud asistentka slíbila cenu, termín nebo uznání reklamace, nebo pokud radila zásah do pružin, lanek či elektroinstalace. Volání, kde se ukázalo, že nejde o produkt LOMAX nebo šlo o obchodní dotaz, hodnoť jako PASS, pokud byl zákazník správně nasměrován."
+          "content": "Vyhodnoť jako PASS pouze pokud: (a) asistentka zjistila jméno, telefon, adresu včetně PSČ a konkrétní popis závady, (b) údaje zákazníkovi zrekapitulovala a on je potvrdil, (c) byl zavolán nástroj odeslat_servisni_poptavku. FAIL, pokud asistentka slíbila cenu, termín nebo uznání reklamace, nebo pokud radila zásah do pružin, lanek či elektroinstalace. Volání, kde se ukázalo, že nejde o produkt LOMAX nebo šlo o obchodní dotaz, hodnoť jako PASS, pokud byl zákazník správně nasměrován."
         }
       ]
     },
@@ -149,7 +149,7 @@
           },
           "duvod_neodeslani": {
             "type": "string",
-            "description": "Pokud poptávka odeslána nebyla, jednou větou proč (zákazník zavěsil, nešlo o produkt LOMAX, obchodní dotaz, nedal souhlas, technická chyba)."
+            "description": "Pokud poptávka odeslána nebyla, jednou větou proč (zákazník zavěsil, nešlo o produkt LOMAX, obchodní dotaz, technická chyba)."
           }
         }
       }

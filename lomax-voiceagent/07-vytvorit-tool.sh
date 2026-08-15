@@ -33,7 +33,7 @@ cat > /tmp/lomax_tool.json <<EOF
   ],
   "function": {
     "name": "odeslat_servisni_poptavku",
-    "description": "Odešle kompletní servisní / reklamační poptávku zákazníka do systému LOMAX, který ji e-mailem předá servisnímu oddělení a nejbližšímu autorizovanému zastoupení. Volej AŽ POTÉ, co jsi zákazníkovi zrekapitulovala údaje, on je potvrdil a dal souhlas se zpracováním. Volej maximálně jednou za hovor (kromě jednoho opakování při chybě). Pole, která nemáš, posílej jako prázdný řetězec - nikdy je nevymýšlej.",
+    "description": "Odešle kompletní servisní / reklamační poptávku zákazníka do systému LOMAX, který ji e-mailem předá servisnímu oddělení a nejbližšímu autorizovanému zastoupení. Volej AŽ POTÉ, co jsi zákazníkovi zrekapitulovala údaje a on je potvrdil. Volej maximálně jednou za hovor (kromě jednoho opakování při chybě). Pole, která nemáš, posílej jako prázdný řetězec - nikdy je nevymýšlej.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -58,12 +58,10 @@ cat > /tmp/lomax_tool.json <<EOF
         "kdo_montoval": { "type": "string", "description": "Kdo produkt montoval - zastoupení LOMAX, jiná firma, svépomocí, nebo prázdný řetězec." },
         "dostupnost": { "type": "string", "description": "Kdy je zákazník k zastižení / kdy se mu hodí návštěva technika." },
         "ma_fotografie": { "type": "boolean", "description": "true, pokud zákazník uvedl, že fotografii závady má nebo ji pořídí a pošle." },
-        "souhlas_gdpr": { "type": "boolean", "description": "true pouze pokud zákazník výslovně souhlasil s předáním údajů servisnímu partnerovi. Bez souhlasu poptávku neodesílej." },
         "shrnuti_pro_technika": { "type": "string", "description": "1-2 věty pro technika: co se stalo a co si nejspíš bude potřebovat vzít s sebou." },
-        "prepis_klicovych_bodu": { "type": "string", "description": "2-4 doslovné citace zákazníka o závadě, oddělené středníkem." },
         "poznamka": { "type": "string", "description": "Cokoli dalšího podstatného: volající není majitel, název firmy/SVJ, urgence, zákazník si není jistý výrobcem, zajímá ho cena dopředu apod." }
       },
-      "required": ["jmeno_prijmeni", "telefon", "adresa_ulice_cp", "adresa_mesto", "adresa_psc", "typ_pozadavku", "typ_produktu", "popis_zavady", "priorita", "bezpecnostni_riziko", "souhlas_gdpr", "shrnuti_pro_technika"]
+      "required": ["jmeno_prijmeni", "telefon", "adresa_ulice_cp", "adresa_mesto", "adresa_psc", "typ_pozadavku", "typ_produktu", "popis_zavady", "priorita", "bezpecnostni_riziko", "shrnuti_pro_technika"]
     }
   }
 }

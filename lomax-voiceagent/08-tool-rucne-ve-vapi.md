@@ -16,7 +16,7 @@ odeslat_servisni_poptavku
 ### Description
 Tohle je nejdůležitější text celého nástroje — model z něj pozná, **kdy** má nástroj zavolat. Nezkracuj ho.
 ```
-Odešle kompletní servisní / reklamační poptávku zákazníka do systému LOMAX, který ji e-mailem předá servisnímu oddělení a nejbližšímu autorizovanému zastoupení. Volej AŽ POTÉ, co jsi zákazníkovi zrekapitulovala údaje, on je potvrdil a dal souhlas se zpracováním. Volej maximálně jednou za hovor (kromě jednoho opakování při chybě). Pole, která nemáš, posílej jako prázdný řetězec - nikdy je nevymýšlej.
+Odešle kompletní servisní / reklamační poptávku zákazníka do systému LOMAX, který ji e-mailem předá servisnímu oddělení a nejbližšímu autorizovanému zastoupení. Volej AŽ POTÉ, co jsi zákazníkovi zrekapitulovala údaje a on je potvrdil. Volej maximálně jednou za hovor (kromě jednoho opakování při chybě). Pole, která nemáš, posílej jako prázdný řetězec - nikdy je nevymýšlej.
 ```
 
 ### Server URL
@@ -46,7 +46,7 @@ Sekce **Messages** → **Add Message**. Přidej všechny čtyři. Bez nich bot b
 
 ---
 
-## KROK 3 — Parametry (25× Add Property)
+## KROK 3 — Parametry (23× Add Property)
 
 Pro každý blok níže klikni **Add Property** a vyplň tři pole + zaškrtávátko.
 
@@ -159,22 +159,12 @@ Kdy je zákazník k zastižení nebo kdy se mu hodí návštěva technika. Např
 true, pokud zákazník uvedl, že fotografii závady má nebo ji pořídí a pošle.
 ```
 
-**22.** Name: `souhlas_gdpr` · Type: **boolean** · Required: **ANO**
-```
-true pouze pokud zákazník výslovně souhlasil s předáním údajů servisnímu partnerovi. Bez souhlasu poptávku neodesílej.
-```
-
-**23.** Name: `shrnuti_pro_technika` · Type: **string** · Required: **ANO**
+**22.** Name: `shrnuti_pro_technika` · Type: **string** · Required: **ANO**
 ```
 Jedna až dvě věty pro technika: co se stalo a co si nejspíš bude potřebovat vzít s sebou.
 ```
 
-**24.** Name: `prepis_klicovych_bodu` · Type: **string** · Required: ne
-```
-Dvě až čtyři doslovné citace zákazníka o závadě, oddělené středníkem. Technikovi pomůžou víc než parafráze.
-```
-
-**25.** Name: `poznamka` · Type: **string** · Required: ne
+**23.** Name: `poznamka` · Type: **string** · Required: ne
 ```
 Cokoli dalšího podstatného: volající není majitel, název firmy nebo SVJ, urgence, zákazník si není jistý výrobcem, zajímá ho cena dopředu a podobně.
 ```
@@ -185,9 +175,9 @@ Cokoli dalšího podstatného: volající není majitel, název firmy nebo SVJ, 
 
 Klikni **Create Tool** / **Save**. Pak si v seznamu Tools nástroj otevři a zkontroluj:
 
-- [ ] Je tam všech **25 parametrů**
-- [ ] **12 z nich** je označeno jako Required (čísla 1, 2, 4, 5, 6, 7, 8, 11, 15, 16, 22, 23)
-- [ ] `bezpecnostni_riziko`, `opakovana_zavada`, `ma_fotografie` a `souhlas_gdpr` jsou typu **boolean**, ne string
+- [ ] Je tam všech **23 parametrů**
+- [ ] **11 z nich** je označeno jako Required (čísla 1, 2, 4, 5, 6, 7, 8, 11, 15, 16, 22)
+- [ ] `opakovana_zavada`, `bezpecnostni_riziko` a `ma_fotografie` jsou typu **boolean**, ne string (čísla 14, 15, 21)
 - [ ] Server URL je tvůj Make webhook
 - [ ] Async je vypnuté
 - [ ] Jsou tam všechny 4 hlášky
@@ -218,7 +208,7 @@ Bez publikování se změny na živé číslo nepropíšou.
 
 ## KROK 7 — Ověření, že to volá
 
-V dashboardu klikni **Talk to Assistant** a odehraj krátký hovor: jméno, telefon, adresa s PSČ, popis závady, souhlas.
+V dashboardu klikni **Talk to Assistant** a odehraj krátký hovor: jméno, telefon, adresa s PSČ, popis závady.
 
 - Bot má na konci říct *„Zakládám vám servisní poptávku, moment prosím."* → to znamená, že nástroj **skutečně zavolal**
 - V Make se má scénář spustit a v historii mít zelený běh
