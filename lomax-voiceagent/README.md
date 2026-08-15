@@ -18,6 +18,7 @@ Bot celý hovor vede česky, vytáhne ze zákazníka všechno, co servisní tech
 | `07-vytvorit-tool.sh` | Založení nástrojů přes API jedním příkazem (rychlá cesta) |
 | `08-tool-rucne-ve-vapi.md` | Založení nástroje **ručně v dashboardu** — text ke zkopírování do každého pole |
 | `09-parametry.json` | Všech 22 parametrů nástroje najednou — k vložení do JSON editoru ve VAPI |
+| `10-maia-prompt.md` | Prompt pro Make Maiu, která scénář postaví za tebe |
 
 ---
 
@@ -26,7 +27,7 @@ Bot celý hovor vede česky, vytáhne ze zákazníka všechno, co servisní tech
 > Podrobný klikací postup včetně každého pole ve VAPI je v **`06-vapi-navod.md`**. Níže je zkrácená verze.
 
 **1. Make — webhook**
-Vytvoř scénář podle `04-make-scenar.md`, začni modulem *Webhooks → Custom webhook*, zkopíruj URL.
+Vytvoř scénář podle `04-make-scenar.md`, začni modulem *Webhooks → Custom webhook*, zkopíruj URL. Nebo si ho nech postavit Maiou promptem z `10-maia-prompt.md`.
 
 **2. VAPI — nástroj**
 Dashboard → Tools → Create Tool → typ *Function*. Vlož definici `odeslat_servisni_poptavku` z `02-vapi-tools.json`, do Server URL vlož Make webhook. Přidej i nástroj `ukoncit_hovor` (typ *End Call*).
