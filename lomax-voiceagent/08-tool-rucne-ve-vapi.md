@@ -2,7 +2,9 @@
 
 Postupuj shora dolů. Texty v šedých blocích jsou připravené ke zkopírování 1:1.
 
-> **Zkratka:** pokud ti VAPI u parametrů nabídne přepnutí na JSON / raw editor, přeskoč KROK 3 a vlož tam rovnou celý obsah `09-parametry.json`.
+> **Zkratka:** VAPI má u parametrů přepínač **Model / JSON**. Přepni na **JSON**, označ v editoru všechno (Ctrl+A) a vlož celý obsah `09-parametry.json`. Tím KROK 3 odpadá.
+>
+> Musíš vložit **celý objekt** včetně `{ "type": "object", "properties": { … }, "required": [ … ] }`. Když vložíš jen kus polí za už existující JSON, editor hlásí *Unexpected non-whitespace character after JSON*.
 
 **Kde to je:** VAPI dashboard → levé menu **Tools** → tlačítko **Create Tool** → typ **Function**.
 
@@ -63,9 +65,7 @@ Celé jméno a příjmení volajícího, tak jak ho nadiktoval. Například Jan 
 
 **2.** Name: `telefon_jine` · Type: **string** · Required: ne
 ```
-Alternativní telefonní číslo pro zpětné volání. Vyplň POUZE tehdy, když zákazník řekne, že se mu má technik ozvat na JINÉ číslo, než ze kterého právě volá. Jinak prázdný řetězec - číslo volajícího se doplní automaticky z hovoru. Když ho zákazník nadiktuje, přečti mu ho zpět.
-```
-Telefonní číslo pro zpětné volání, jen číslice bez mezer, případně s předvolbou. Například 777123456 nebo +420777123456. Musí být ověřeno přečtením zpět.
+Alternativní telefonní číslo pro zpětné volání, jen číslice bez mezer. Vyplň POUZE tehdy, když zákazník řekne, že se mu má technik ozvat na JINÉ číslo, než ze kterého právě volá. Jinak prázdný řetězec - číslo volajícího se doplní automaticky z hovoru. Když ho zákazník nadiktuje, přečti mu ho zpět.
 ```
 
 **3.** Name: `adresa_ulice_cp` · Type: **string** · Required: **ANO**
