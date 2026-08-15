@@ -14,7 +14,9 @@ Bot celý hovor vede česky, vytáhne ze zákazníka všechno, co servisní tech
 | `03-vapi-assistant-config.json` | Zbytek nastavení asistenta — hlas, přepis, timeouty, analýza |
 | `04-make-scenar.md` | Návod na Make scénář krok za krokem + hotové HTML e-maily |
 | `05-testovaci-scenare.md` | 14 scénářů, které projeď před ostrým provozem |
-| `06-vapi-navod.md` | **Klikací návod na VAPI** — varianty první zprávy, založení toolu (přes API i ručně ve formuláři), všechny záložky asistenta |
+| `06-vapi-navod.md` | **Klikací návod na VAPI** — varianty první zprávy, všechny záložky asistenta, časté chyby |
+| `07-vytvorit-tool.sh` | Založení nástrojů přes API jedním příkazem (rychlá cesta) |
+| `08-tool-rucne-ve-vapi.md` | Založení nástroje **ručně v dashboardu** — text ke zkopírování do každého pole |
 
 ---
 
