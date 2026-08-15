@@ -14,10 +14,13 @@ Bot celý hovor vede česky, vytáhne ze zákazníka všechno, co servisní tech
 | `03-vapi-assistant-config.json` | Zbytek nastavení asistenta — hlas, přepis, timeouty, analýza |
 | `04-make-scenar.md` | Návod na Make scénář krok za krokem + hotové HTML e-maily |
 | `05-testovaci-scenare.md` | 14 scénářů, které projeď před ostrým provozem |
+| `06-vapi-navod.md` | **Klikací návod na VAPI** — varianty první zprávy, založení toolu (přes API i ručně ve formuláři), všechny záložky asistenta |
 
 ---
 
 ## Nasazení za 30 minut
+
+> Podrobný klikací postup včetně každého pole ve VAPI je v **`06-vapi-navod.md`**. Níže je zkrácená verze.
 
 **1. Make — webhook**
 Vytvoř scénář podle `04-make-scenar.md`, začni modulem *Webhooks → Custom webhook*, zkopíruj URL.
