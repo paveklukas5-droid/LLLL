@@ -17,6 +17,7 @@ Bot celý hovor vede česky, vytáhne ze zákazníka všechno, co servisní tech
 | `06-vapi-navod.md` | **Klikací návod na VAPI** — varianty první zprávy, všechny záložky asistenta, časté chyby |
 | `07-vytvorit-tool.sh` | Založení nástrojů přes API jedním příkazem (rychlá cesta) |
 | `08-tool-rucne-ve-vapi.md` | Založení nástroje **ručně v dashboardu** — text ke zkopírování do každého pole |
+| `09-parametry.json` | Všech 22 parametrů nástroje najednou — k vložení do JSON editoru ve VAPI |
 
 ---
 
@@ -52,6 +53,7 @@ Projeď `05-testovaci-scenare.md`. Minimálně T1, T2, T8 a T9 než pustíš lin
 Prompt staví na veřejně dostupných informacích z webu. **Před ostrým provozem si nech od LOMAXu potvrdit:**
 
 - [ ] **Cílová e-mailová adresa servisu** — v šablonách je zástupné `servis@lomax.cz`
+- [ ] **Jak se k technikovi dostanou fotky závady** — bot e-mail nesbírá, takže si o fotku musí říct technik při zpětném volání. Pokud LOMAX chce fotky dřív, nejjednodušší je z Make poslat zákazníkovi SMS s odkazem na nahrávací formulář
 - [ ] **Telefonní číslo pro předání zákazníka** — v promptu je `519 304 040` (recepce). Pokud má servis vlastní linku, přepiš ji v promptu na **všech místech** (sekce 3.4, 7.4, 7.5, 7.11, 7.12)
 - [ ] **Záruční podmínky v sekci 3.2** — údaje jsou z webu, ale záruky se mění. Ať je schválí někdo z LOMAXu, nebo tu sekci úplně smaž a bot bude na dotazy odpovídat „to posoudí technik"
 - [ ] **Zda se má poptávka směrovat automaticky na zastoupení podle PSČ** — pokud LOMAX má tabulku PSČ → zastoupení, přidej ji do Make jako Data Store a e-mail chodí rovnou správnému partnerovi
@@ -67,7 +69,8 @@ Bot sbírá osobní údaje, takže:
 2. **Nahrávání hovoru** je v `03-vapi-assistant-config.json` zapnuté. Buď ho vypni (`recordingEnabled: false`), nebo uprav první větu na:
    > „Dobrý den, tady Klára ze servisu LOMAX. Hovor je nahráván kvůli kvalitě služeb. Jak vám můžu pomoci?"
 3. **Bot nikdy nežádá** rodné číslo, číslo OP, číslo účtu ani platební údaje — je to v zakázaném chování.
-4. **Doplň informaci o hlasové lince** do zásad ochrany osobních údajů na lomax.cz.
+4. **Telefon se nesbírá diktováním** — bere se z caller ID hovoru. Bot se na číslo zeptá jen tehdy, když volající své číslo skryl.
+5. **Doplň informaci o hlasové lince** do zásad ochrany osobních údajů na lomax.cz.
 
 ---
 

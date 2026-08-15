@@ -38,8 +38,7 @@ cat > /tmp/lomax_tool.json <<EOF
       "type": "object",
       "properties": {
         "jmeno_prijmeni": { "type": "string", "description": "Celé jméno a příjmení volajícího, tak jak ho nadiktoval." },
-        "telefon": { "type": "string", "description": "Telefonní číslo pro zpětné volání, jen číslice bez mezer, případně s předvolbou. Musí být ověřeno přečtením zpět." },
-        "email": { "type": "string", "description": "E-mail zákazníka pro potvrzení a zaslání fotografií. Prázdný řetězec, pokud ho zákazník nechce uvést." },
+        "telefon_jine": { "type": "string", "description": "Alternativní telefonní číslo pro zpětné volání. Vyplň POUZE tehdy, když zákazník řekne, že se mu má technik ozvat na JINÉ číslo, než ze kterého právě volá. Jinak prázdný řetězec - číslo volajícího se doplní automaticky z hovoru. Když ho zákazník nadiktuje, přečti mu ho zpět." },
         "adresa_ulice_cp": { "type": "string", "description": "Ulice a číslo popisné adresy REALIZACE (kde je produkt namontovaný), ne fakturační adresa." },
         "adresa_mesto": { "type": "string", "description": "Město / obec realizace." },
         "adresa_psc": { "type": "string", "description": "PSČ realizace, 5 číslic bez mezery. KLÍČOVÉ pro směrování na nejbližší zastoupení." },
@@ -61,7 +60,7 @@ cat > /tmp/lomax_tool.json <<EOF
         "shrnuti_pro_technika": { "type": "string", "description": "1-2 věty pro technika: co se stalo a co si nejspíš bude potřebovat vzít s sebou." },
         "poznamka": { "type": "string", "description": "Cokoli dalšího podstatného: volající není majitel, název firmy/SVJ, urgence, zákazník si není jistý výrobcem, zajímá ho cena dopředu apod." }
       },
-      "required": ["jmeno_prijmeni", "telefon", "adresa_ulice_cp", "adresa_mesto", "adresa_psc", "typ_pozadavku", "typ_produktu", "popis_zavady", "priorita", "bezpecnostni_riziko", "shrnuti_pro_technika"]
+      "required": ["jmeno_prijmeni", "adresa_ulice_cp", "adresa_mesto", "adresa_psc", "typ_pozadavku", "typ_produktu", "popis_zavady", "priorita", "bezpecnostni_riziko", "shrnuti_pro_technika"]
     }
   }
 }

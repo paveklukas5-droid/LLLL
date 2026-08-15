@@ -8,13 +8,15 @@ Značení: ✅ = musí projít, ❌ = nesmí se stát.
 
 ## T1 — Zlatá cesta
 **Ty říkáš:** „Dobrý den, mám od vás sekční vrata a poslední tři dny se mi nezavírají úplně dolů."
-Odpovídej ochotně na všechno, e-mail nadiktuj s háčkem v příjmení.
+Odpovídej ochotně na všechno, příjmení měj s háčkem.
 
 - ✅ Bot se ptá **po jedné otázce**
 - ✅ Zeptá se na bezpečnost (visí něco, prasklo lanko)
 - ✅ Zeptá se max. 1–2 diagnostické otázky
-- ✅ Získá jméno, telefon, ulici, město, **PSČ**, produkt, popis
-- ✅ Přečte zpět telefon i adresu
+- ✅ Získá jméno, ulici, město, **PSČ**, produkt, popis
+- ✅ **Neptá se na telefon** — jen ověří „máme volat zpět na číslo, ze kterého voláte?"
+- ✅ Vůbec se neptá na e-mail
+- ✅ Přečte zpět jméno a adresu
 - ✅ Zavolá nástroj a řekne, že poptávku odeslal
 - ❌ Nesmí slíbit termín ani cenu
 
@@ -77,12 +79,12 @@ Odpovídej ochotně na všechno, e-mail nadiktuj s háčkem v příjmení.
 ---
 
 ## T8 — Diktování s háčky a čísly
-**Ty říkáš:** příjmení „Křížová", e-mail „krizova.jana@seznam.cz", telefon „608 991 274", PSČ „691 08".
+**Ty říkáš:** příjmení „Křížová", PSČ „691 08". Na otázku o zpětném volání odpověz: „Ne, volejte mi radši na 608 991 274."
 
 - ✅ Vyžádá si vyhláskování příjmení
-- ✅ Přečte telefon zpět **po skupinách**, ne jako jedno číslo
-- ✅ E-mail zopakuje se slovy „zavináč" a „tečka"
-- ✅ V payloadu je telefon bez mezer a PSČ bez mezery
+- ✅ Přečte alternativní číslo zpět **po skupinách**, ne jako jedno číslo
+- ✅ V payloadu je `telefon_jine` bez mezer a PSČ bez mezery
+- ✅ V e-mailu je jako kontakt to nadiktované číslo, ne caller ID
 - ❌ Nesmí si domyslet, co neslyšel
 
 **Toto je nejčastější místo, kde čeští voiceboti selhávají.** Když tady bot chybuje, změň transcriber (Deepgram → Azure `cs-CZ` nebo ElevenLabs Scribe) a zvyš `transcriptionEndpointingPlan.onNumberSeconds` na 0.8.
@@ -133,6 +135,16 @@ V Make dočasně vypni scénář a zavolej.
 
 ---
 
+## T14a — Skryté číslo
+Zavolej s potlačeným číslem (předvol `#31#` před číslo).
+
+- ✅ Poptávka se odešle s nadiktovaným číslem
+- ✅ Kdyby se přece jen neptal, v e-mailu je u telefonu varování o skrytém čísle
+- ✅ Bot pozná, že `{{customer.number}}` je prázdné, a **sám si o telefon řekne**
+- ✅ Číslo skončí v `telefon_jine` a přečte ho zpět
+
+---
+
 ## T14 — Slovenský zákazník
 Mluv slovensky.
 
@@ -146,10 +158,8 @@ Mluv slovensky.
 | | Kontrola |
 |---|---|
 | ☐ | Ve všech 14 scénářích dorazil správný e-mail (nebo správně nedorazil) |
-| ☐ | Telefonní čísla v e-mailech jsou přesně taková, jaká jsi diktoval |
+| ☐ | V e-mailu je číslo, ze kterého jsi volal — a u T8 to nadiktované |
 | ☐ | PSČ nikdy nechybí u poptávky, která se má směrovat |
 | ☐ | Přednostní větev se spustila jen u T2 |
-| ☐ | Reply-To v zákaznickém e-mailu vede na servisní schránku |
-| ☐ | Odpověď fotkou na potvrzovací e-mail skutečně dorazí servisu |
 | ☐ | Průměrná délka hovoru u T1 je do 3 minut |
 | ☐ | Bot nikdy neřekl cenu, termín ani „to je záruka" |

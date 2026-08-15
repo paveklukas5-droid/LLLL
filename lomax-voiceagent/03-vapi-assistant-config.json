@@ -123,7 +123,7 @@
       "messages": [
         {
           "role": "system",
-          "content": "Vyhodnoť jako PASS pouze pokud: (a) asistentka zjistila jméno, telefon, adresu včetně PSČ a konkrétní popis závady, (b) údaje zákazníkovi zrekapitulovala a on je potvrdil, (c) byl zavolán nástroj odeslat_servisni_poptavku. FAIL, pokud asistentka slíbila cenu, termín nebo uznání reklamace, nebo pokud radila zásah do pružin, lanek či elektroinstalace. Volání, kde se ukázalo, že nejde o produkt LOMAX nebo šlo o obchodní dotaz, hodnoť jako PASS, pokud byl zákazník správně nasměrován."
+          "content": "Vyhodnoť jako PASS pouze pokud: (a) asistentka zjistila jméno, adresu včetně PSČ a konkrétní popis závady, (b) údaje zákazníkovi zrekapitulovala a on je potvrdil, (c) byl zavolán nástroj odeslat_servisni_poptavku. FAIL, pokud asistentka slíbila cenu, termín nebo uznání reklamace, nebo pokud radila zásah do pružin, lanek či elektroinstalace. Volání, kde se ukázalo, že nejde o produkt LOMAX nebo šlo o obchodní dotaz, hodnoť jako PASS, pokud byl zákazník správně nasměrován."
         }
       ]
     },
@@ -134,8 +134,7 @@
         "type": "object",
         "properties": {
           "jmeno_prijmeni": { "type": "string" },
-          "telefon": { "type": "string" },
-          "email": { "type": "string" },
+          "telefon_jine": { "type": "string", "description": "Jen pokud zákazník chtěl volat zpět na jiné číslo, než ze kterého volal" },
           "adresa_ulice_cp": { "type": "string" },
           "adresa_mesto": { "type": "string" },
           "adresa_psc": { "type": "string" },

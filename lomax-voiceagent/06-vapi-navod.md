@@ -1,6 +1,6 @@
 # VAPI — nastavení krok za krokem
 
-Dvě cesty. **Cesta A přes API** je rychlejší a spolehlivější (nakopíruješ hotový JSON). **Cesta B přes dashboard** je klikací — ve formuláři se JSON vložit nedá, každý parametr nástroje musíš přidat ručně, a těch je 25.
+Dvě cesty. **Cesta A přes API** je rychlejší a spolehlivější (nakopíruješ hotový JSON). **Cesta B přes dashboard** je klikací — ve formuláři se JSON vložit nedá, každý parametr nástroje musíš přidat ručně, a těch je 22. Ve VAPI ale jde u parametrů přepnout na JSON editor — pak vložíš celý blok z `09-parametry.json` najednou.
 
 Doporučuji: **nástroj založ přes API (cesta A), asistenta si naklikej v dashboardu (cesta B2)** — u asistenta se ti pak lépe ladí hlas a prompt živě.
 
@@ -104,35 +104,34 @@ Tohle lidi často vynechají a bot pak 4 sekundy mlčí, což na telefonu působ
 | `Request Failed` | `Omlouvám se, systém mi teď poptávku nepřijal. Zkusím to ještě jednou.` |
 | `Request Delayed` (8000 ms) | `Ještě to zpracovávám, děkuji za trpělivost.` |
 
-### Parametry — 23× „Add Property"
+### Parametry — 22× „Add Property"
 
 Pro každý řádek klikni **Add Property**, vyplň *Name*, *Type*, *Description* (kopíruj z `02-vapi-tools.json`) a zaškrtni *Required* tam, kde je níže ✔.
 
 | # | Name | Type | Req |
 |---|---|---|---|
 | 1 | `jmeno_prijmeni` | string | ✔ |
-| 2 | `telefon` | string | ✔ |
-| 3 | `email` | string | |
-| 4 | `adresa_ulice_cp` | string | ✔ |
-| 5 | `adresa_mesto` | string | ✔ |
-| 6 | `adresa_psc` | string | ✔ |
-| 7 | `typ_pozadavku` | string | ✔ |
-| 8 | `typ_produktu` | string | ✔ |
-| 9 | `model_rada` | string | |
-| 10 | `pohon_znacka` | string | |
-| 11 | `popis_zavady` | string | ✔ |
-| 12 | `technicke_detaily` | string | |
-| 13 | `kdy_zacalo` | string | |
-| 14 | `opakovana_zavada` | boolean | |
-| 15 | `bezpecnostni_riziko` | boolean | ✔ |
-| 16 | `priorita` | string | ✔ |
-| 17 | `rok_montaze` | string | |
-| 18 | `cislo_zakazky` | string | |
-| 19 | `kdo_montoval` | string | |
-| 20 | `dostupnost` | string | |
-| 21 | `ma_fotografie` | boolean | |
-| 22 | `shrnuti_pro_technika` | string | ✔ |
-| 23 | `poznamka` | string | |
+| 2 | `telefon_jine` | string | |
+| 3 | `adresa_ulice_cp` | string | ✔ |
+| 4 | `adresa_mesto` | string | ✔ |
+| 5 | `adresa_psc` | string | ✔ |
+| 6 | `typ_pozadavku` | string | ✔ |
+| 7 | `typ_produktu` | string | ✔ |
+| 8 | `model_rada` | string | |
+| 9 | `pohon_znacka` | string | |
+| 10 | `popis_zavady` | string | ✔ |
+| 11 | `technicke_detaily` | string | |
+| 12 | `kdy_zacalo` | string | |
+| 13 | `opakovana_zavada` | boolean | |
+| 14 | `bezpecnostni_riziko` | boolean | ✔ |
+| 15 | `priorita` | string | ✔ |
+| 16 | `rok_montaze` | string | |
+| 17 | `cislo_zakazky` | string | |
+| 18 | `kdo_montoval` | string | |
+| 19 | `dostupnost` | string | |
+| 20 | `ma_fotografie` | boolean | |
+| 21 | `shrnuti_pro_technika` | string | ✔ |
+| 22 | `poznamka` | string | |
 
 **Když formulář nenabízí `enum`:** u polí `typ_pozadavku`, `typ_produktu` a `priorita` prostě vypiš povolené hodnoty přímo do *Description*, například:
 

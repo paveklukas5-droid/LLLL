@@ -13,9 +13,8 @@ Dva scénáře. První je povinný (přijme poptávku a rozešle e-maily), druh�
         ↓
 [3] Router
         ├── větev A: Email → Send an email     → servisní oddělení  (VŽDY)
-        ├── větev B: Email → Send an email     → zákazník (filtr: email není prázdný)
-        ├── větev C: Google Sheets → Add a row  (volitelné, evidence)
-        └── větev D: Email / Slack → PŘEDNOSTNÍ (filtr: priorita = vysoka)
+        ├── větev B: Google Sheets → Add a row  (volitelné, evidence)
+        └── větev C: Email / Slack → PŘEDNOSTNÍ (filtr: priorita = vysoka)
         ↓
 [4] Webhooks → Webhook response          (musí být poslední!)
 ```
@@ -39,6 +38,14 @@ Pro zaslání odpovědi zpět VAPI potřebuješ i `toolCallId`:
 message.toolCalls[0].id
 ```
 
+**Telefonní číslo zákazníka.** Bot se na něj neptá — bere se z hovoru. Ve stejném payloadu ho najdeš tady:
+```
+message.call.customer.number
+```
+Bot vyplní pole `telefon_jine` **jen tehdy**, když zákazník chce volat zpět na jiné číslo. V modulu 2 se z těch dvou zdrojů udělá jedno kontaktní číslo.
+
+> Když volající skryje číslo (anonymní hovor), je `customer.number` prázdné. Proto má e-mail pro servis u telefonu nouzový text — viz níže.
+
 ### Modul 2 — Set multiple variables (normalizace)
 
 | Proměnná | Vzorec |
@@ -48,13 +55,14 @@ message.toolCalls[0].id
 | `produkt_text` | `switch(typ_produktu; "garazova_vrata_sekcni"; "Sekční garážová vrata"; "garazova_vrata_posuvna"; "Posuvná garážová vrata"; "garazova_vrata_rolovaci"; "Rolovací garážová vrata"; "garazova_vrata_dvoukridla"; "Dvoukřídlá garážová vrata"; "predokenni_roleta"; "Předokenní roleta"; "venkovni_zaluzie"; "Venkovní žaluzie"; "vchodove_dvere"; "Vchodové dveře"; "okno"; "Okno"; "sit_proti_hmyzu"; "Síť proti hmyzu"; "rolovaci_mriz"; "Rolovací mříž"; "pohon_nebo_ovladac"; "Pohon / ovladač"; "Jiné")` |
 | `typ_text` | `switch(typ_pozadavku; "reklamace"; "Reklamace"; "servis"; "Servis"; "servisni_prohlidka"; "Servisní prohlídka"; "Jiné")` |
 | `adresa_cela` | `adresa_ulice_cp + ", " + adresa_mesto + ", " + adresa_psc` |
+| `telefon_kontakt` | `ifempty(telefon_jine; message.call.customer.number)` |
+| `telefon_pozn` | `if(length(telefon_jine) > 0; "zákazník požádal o zpětné volání na toto číslo"; "číslo, ze kterého volal")` |
 
 ### Modul 3 — Router s filtry
 
 - **Větev A** (servisní oddělení): bez filtru.
-- **Větev B** (potvrzení zákazníkovi): filtr `email` → *Exists* AND *Text contains* `@`.
-- **Větev C** (Google Sheets): bez filtru.
-- **Větev D** (přednostní upozornění): filtr `priorita` → *Equal to* `vysoka` **OR** `bezpecnostni_riziko` = `true`. Pošli na mobil odpovědné osoby / do Slacku / SMS.
+- **Větev B** (Google Sheets): bez filtru.
+- **Větev C** (přednostní upozornění): filtr `priorita` → *Equal to* `vysoka` **OR** `bezpecnostni_riziko` = `true`. Pošli na mobil odpovědné osoby / do Slacku / SMS.
 
 ### Modul 4 — Webhook response (POVINNÉ)
 
@@ -81,7 +89,6 @@ Text v `result` bot uslyší a může ho zákazníkovi převyprávět — proto 
 ## E-mail A — pro servisní oddělení
 
 **Komu:** `servis@lomax.cz` (dopln reálnou adresu) + případně `info@lomax.cz`
-**Reply-To:** `{{email}}` zákazníka — kolega může rovnou odpovědět
 **Předmět:**
 
 ```
@@ -99,8 +106,7 @@ Text v `result` bot uslyší a může ho zákazníkovi převyprávět — proto 
     <tr style="background:#f4f4f4"><td colspan="2"><b>PRIORITA: {{priorita_text}}</b>{{if(bezpecnostni_riziko; "  ⚠️ NAHLÁŠENO BEZPEČNOSTNÍ RIZIKO – zákazník poučen, aby produkt nepoužíval."; "")}}</td></tr>
 
     <tr><td width="180"><b>Zákazník</b></td><td>{{jmeno_prijmeni}}</td></tr>
-    <tr><td><b>Telefon</b></td><td><a href="tel:{{telefon}}">{{telefon}}</a></td></tr>
-    <tr><td><b>E-mail</b></td><td>{{ifempty(email; "– neuveden –")}}</td></tr>
+    <tr><td><b>Telefon</b></td><td><a href="tel:{{telefon_kontakt}}">{{ifempty(telefon_kontakt; "⚠️ SKRYTÉ ČÍSLO – zákazník nelze zpětně kontaktovat, viz nahrávka hovoru")}}</a><br><span style="color:#888;font-size:12px">{{telefon_pozn}}</span></td></tr>
     <tr><td><b>Adresa realizace</b></td><td>{{adresa_cela}}</td></tr>
     <tr><td><b>Dostupnost</b></td><td>{{ifempty(dostupnost; "– neuvedena –")}}</td></tr>
 
@@ -117,7 +123,7 @@ Text v `result` bot uslyší a může ho zákazníkovi převyprávět — proto 
     <tr><td><b>Technické detaily</b></td><td>{{ifempty(technicke_detaily; "–")}}</td></tr>
     <tr><td><b>Kdy začalo</b></td><td>{{ifempty(kdy_zacalo; "–")}}</td></tr>
     <tr><td><b>Opakovaná závada</b></td><td>{{if(opakovana_zavada; "ANO – řešeno už dříve"; "ne")}}</td></tr>
-    <tr><td><b>Fotografie</b></td><td>{{if(ma_fotografie; "Zákazník je pošle odpovědí na potvrzovací e-mail"; "nemá")}}</td></tr>
+    <tr><td><b>Fotografie</b></td><td>{{if(ma_fotografie; "Zákazník fotku má – vyžádejte si ji při zpětném volání"; "nemá")}}</td></tr>
 
     <tr style="background:#fffbe6"><td><b>Shrnutí pro technika</b></td><td>{{shrnuti_pro_technika}}</td></tr>
     <tr><td><b>Poznámka</b></td><td>{{ifempty(poznamka; "–")}}</td></tr>
@@ -126,42 +132,6 @@ Text v `result` bot uslyší a může ho zákazníkovi převyprávět — proto 
   <p style="font-size:12px;color:#888;margin-top:16px">
     Vygenerováno automaticky z telefonního hovoru. Doporučený další krok: přiřadit nejbližšímu autorizovanému zastoupení podle PSČ {{adresa_psc}}.
   </p>
-</div>
-```
-
----
-
-## E-mail B — potvrzení zákazníkovi
-
-**Komu:** `{{email}}`
-**Reply-To:** `servis@lomax.cz` — **důležité**, aby fotky přišly na správné místo
-**Předmět:** `Potvrzení servisní poptávky {{cislo_poptavky}} – LOMAX`
-
-```html
-<div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;color:#222">
-  <p>Dobrý den, {{jmeno_prijmeni}},</p>
-
-  <p>děkujeme za váš telefonát. Vaši servisní poptávku jsme zaevidovali pod číslem <b>{{cislo_poptavky}}</b> a předali ji nejbližšímu autorizovanému servisnímu zastoupení LOMAX. Technik se vám ozve na telefon {{telefon}}.</p>
-
-  <p style="background:#f4f4f4;padding:12px;border-radius:6px">
-    <b>Shrnutí vašeho požadavku</b><br>
-    Produkt: {{produkt_text}}<br>
-    Adresa: {{adresa_cela}}<br>
-    Popis závady: {{popis_zavady}}
-  </p>
-
-  <p><b>Máte fotografii závady?</b> Stačí odpovědět na tento e-mail a fotku přiložit. Technik pak přijede rovnou se správným náhradním dílem a oprava proběhne na jeden zásah.</p>
-
-  {{if(bezpecnostni_riziko; "<p style='background:#fdecea;padding:12px;border-radius:6px;border-left:4px solid #d33'><b>Důležité upozornění:</b> Podle vašeho popisu může být produkt nebezpečný. Prosím, do vyřešení ho nepoužívejte a nemanipulujte s ním.</p>"; "")}}
-
-  <p>Pokud potřebujete cokoli doplnit nebo se údaje změnily, napište nám na tento e-mail nebo zavolejte na <b>519 304 040</b> (po–pá 8:00–16:00).</p>
-
-  <p>S pozdravem<br>
-  <b>Servisní oddělení LOMAX</b><br>
-  LOMAX &amp; Co s.r.o., Bořetice 417, 691 08<br>
-  info@lomax.cz · www.lomax.cz</p>
-
-  <p style="font-size:11px;color:#999">Vaše údaje zpracováváme výhradně za účelem vyřízení tohoto servisního požadavku. Více v zásadách ochrany osobních údajů na lomax.cz.</p>
 </div>
 ```
 
@@ -204,6 +174,7 @@ curl -X POST "https://hook.eu2.make.com/TVUJ_WEBHOOK" \
   -d '{
   "message": {
     "type": "tool-calls",
+    "call": { "customer": { "number": "+420777123456" } },
     "toolCalls": [{
       "id": "call_test_001",
       "type": "function",
@@ -211,8 +182,7 @@ curl -X POST "https://hook.eu2.make.com/TVUJ_WEBHOOK" \
         "name": "odeslat_servisni_poptavku",
         "arguments": {
           "jmeno_prijmeni": "Jan Novák",
-          "telefon": "777123456",
-          "email": "jan.novak@example.com",
+          "telefon_jine": "",
           "adresa_ulice_cp": "Krátká 12",
           "adresa_mesto": "Brno",
           "adresa_psc": "60200",
