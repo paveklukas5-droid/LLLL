@@ -32,7 +32,9 @@
     "language": "cs",
     "smartFormat": false,
     "numerals": false,
-    "endpointing": 220,
+    "endpointing": 500,
+    "confidenceThreshold": 0,
+    "_poznamka_endpointing": "500 ms, ne 300. Zákazník diktující číslice dělá mezi nimi pauzy delší než 300 ms - kratší endpointing rozseká jednu číselnou řadu na fragmenty, které model skládá dohromady sám. confidenceThreshold drž na 0: cokoli nad nulou zahazuje nejisté úseky POTICHU, a chybějící číslice je horší než špatně rozpoznaná, protože tu zákazník při rekapitulaci opraví.",
     "_poznamka_cisla": "smartFormat i numerals MUSÍ být false. Zapnuté se snaží z diktovaných číslic udělat hezký zápis a z 6-2-1-0-0-4 udělají 621 004 nebo dokonce 61 001. U servisní linky chceš syrové číslice. nova-3 má na češtině znatelně vyšší confidence než nova-2 - nevracej se na nova-2.",
     "_poznamka_transcriber": "Alternativy pro češtinu, otestuj co ti sedne nejlíp: (1) provider 'azure', language 'cs-CZ' – velmi spolehlivé u čísel a PSČ; (2) provider 'elevenlabs', model 'scribe_v1' – nejlepší přesnost u příjmení, o něco vyšší latence. Češtinu testuj VŽDY na reálném telefonním hovoru, ne v prohlížeči."
   },
