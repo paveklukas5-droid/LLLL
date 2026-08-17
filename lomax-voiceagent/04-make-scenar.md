@@ -88,52 +88,88 @@ Text v `result` bot uslyší a může ho zákazníkovi převyprávět — proto 
 
 ## E-mail A — pro servisní oddělení
 
-**Komu:** `servis@lomax.cz` (dopln reálnou adresu) + případně `info@lomax.cz`
-**Předmět:**
+### Hlavičky (tady se to nejčastěji pokazí)
+
+| Pole v modulu Email | Hodnota |
+|---|---|
+| **From / Odesílatel** | `servis@lomax.cz` — ne gmailová adresa agentury. Linka se představuje jako servis LOMAX, tak ať tak vypadá i e-mail. Gmail má navíc denní limity, na které v provozu narazíš. |
+| **To** | `servis@lomax.cz` (doplň reálnou) |
+| **Reply-To** | `servis@lomax.cz` — **nikdy nenech prázdné.** Bez něj odpovědi dispečerů létají na účet, ze kterého scénář běží. |
+| **Content type** | vyber v modulu **HTML**. |
+
+> **MIME pozor.** Content-Type nepiš do sekce *Custom headers*. Make ho nastaví sám podle přepínače Content type. Když ho přidáš ručně, mail má dvě hlavičky `Content-Type` (`multipart/mixed` a hned pod ní `text/plain`), což je nevalidní — část klientů pak místo mailu zobrazí zdroják HTML.
+
+**Textová alternativa.** Modul *Email → Send an email* má pole pro text i HTML. Vyplň **obě**, ať vznikne korektní `multipart/alternative`. Do textové verze stačí:
 
 ```
-{{priorita_text}} Servisní poptávka {{cislo_poptavky}} – {{produkt_text}} – {{adresa_mesto}} {{adresa_psc}}
+LOMAX - nova servisni poptavka {{cislo_poptavky}}
+Priorita: {{priorita_text}}
+Zakaznik: {{jmeno_prijmeni}}, tel. {{telefon_kontakt}}
+Adresa: {{adresa_cela}}
+Produkt: {{produkt_text}}
+Zavada: {{popis_zavady}}
+Shrnuti: {{shrnuti_pro_technika}}
+Zaznam hovoru: https://dashboard.vapi.ai/calls/{{message.call.id}}
 ```
 
-**Tělo (HTML):**
+### Předmět
+
+```
+{{priorita_text}} · {{cislo_poptavky}} · {{produkt_text}} · {{adresa_mesto}} {{adresa_psc}}
+```
+
+### Tělo (HTML)
 
 ```html
 <div style="font-family:Arial,Helvetica,sans-serif;max-width:640px;color:#222">
+
+  {{if(priorita = "vysoka" or bezpecnostni_riziko; "<div style='background:#d32f2f;color:#fff;padding:12px 16px;border-radius:6px;font-size:16px;font-weight:bold;margin-bottom:16px'>PŘEDNOSTNÍ PŘÍPAD — VYŘÍDIT MIMO POŘADÍ</div>"; "")}}
+
+  {{if(bezpecnostni_riziko; "<div style='background:#fdecea;border-left:4px solid #d32f2f;padding:12px 16px;margin-bottom:16px'><b>Nahlášeno bezpečnostní riziko.</b> Zákazník byl v hovoru poučen, aby produkt nepoužíval a nemanipuloval s ním.</div>"; "")}}
+
   <h2 style="margin:0 0 4px">Nová servisní poptávka z telefonní linky</h2>
-  <p style="margin:0 0 16px;color:#666">Číslo: <b>{{cislo_poptavky}}</b> · Přijato: {{formatDate(now; "D. M. YYYY HH:mm")}} · Zdroj: hlasová asistentka Klára</p>
+  <p style="margin:0 0 16px;color:#666">
+    <b>{{cislo_poptavky}}</b> · {{formatDate(now; "D. M. YYYY HH:mm")}} · priorita: <b>{{priorita_text}}</b><br>
+    <a href="https://dashboard.vapi.ai/calls/{{message.call.id}}">Poslechnout hovor a přečíst přepis</a>
+  </p>
 
   <table cellpadding="8" cellspacing="0" style="border-collapse:collapse;width:100%;font-size:14px">
-    <tr style="background:#f4f4f4"><td colspan="2"><b>PRIORITA: {{priorita_text}}</b>{{if(bezpecnostni_riziko; "  ⚠️ NAHLÁŠENO BEZPEČNOSTNÍ RIZIKO – zákazník poučen, aby produkt nepoužíval."; "")}}</td></tr>
-
-    <tr><td width="180"><b>Zákazník</b></td><td>{{jmeno_prijmeni}}</td></tr>
-    <tr><td><b>Telefon</b></td><td><a href="tel:{{telefon_kontakt}}">{{ifempty(telefon_kontakt; "⚠️ SKRYTÉ ČÍSLO – zákazník nelze zpětně kontaktovat, viz nahrávka hovoru")}}</a><br><span style="color:#888;font-size:12px">{{telefon_pozn}}</span></td></tr>
+    <tr style="background:#f4f4f4"><td colspan="2"><b>ZÁKAZNÍK</b></td></tr>
+    <tr><td width="180"><b>Jméno</b></td><td>{{jmeno_prijmeni}}</td></tr>
+    <tr><td><b>Telefon</b></td><td>
+      {{if(length(telefon_kontakt) > 0; "<a href='tel:" + telefon_kontakt + "'>" + telefon_kontakt + "</a>"; "<b style='color:#d32f2f'>SKRYTÉ ČÍSLO — zákazníka nelze zpětně kontaktovat</b>")}}
+      <br><span style="color:#888;font-size:12px">{{telefon_pozn}}</span>
+    </td></tr>
     <tr><td><b>Adresa realizace</b></td><td>{{adresa_cela}}</td></tr>
-    <tr><td><b>Dostupnost</b></td><td>{{ifempty(dostupnost; "– neuvedena –")}}</td></tr>
+    <tr><td><b>Dostupnost</b></td><td>{{ifempty(dostupnost; "neuvedeno")}}</td></tr>
 
     <tr style="background:#f4f4f4"><td colspan="2"><b>PRODUKT</b></td></tr>
     <tr><td><b>Typ</b></td><td>{{produkt_text}}</td></tr>
-    <tr><td><b>Modelová řada</b></td><td>{{ifempty(model_rada; "– neznámá –")}}</td></tr>
-    <tr><td><b>Pohon</b></td><td>{{ifempty(pohon_znacka; "– neuveden –")}}</td></tr>
-    <tr><td><b>Rok montáže</b></td><td>{{ifempty(rok_montaze; "– neví –")}}</td></tr>
-    <tr><td><b>Číslo zakázky</b></td><td>{{ifempty(cislo_zakazky; "– nemá k dispozici –")}}</td></tr>
-    <tr><td><b>Montoval</b></td><td>{{ifempty(kdo_montoval; "– neuvedeno –")}}</td></tr>
+    <tr><td><b>Modelová řada</b></td><td>{{ifempty(model_rada; "neuvedeno")}}</td></tr>
+    <tr><td><b>Pohon</b></td><td>{{ifempty(pohon_znacka; "neuvedeno")}}</td></tr>
+    <tr><td><b>Rok montáže</b></td><td>{{ifempty(rok_montaze; "neuvedeno")}}</td></tr>
+    <tr><td><b>Číslo zakázky</b></td><td>{{ifempty(cislo_zakazky; "neuvedeno — dohledat podle adresy")}}</td></tr>
+    <tr><td><b>Montoval</b></td><td>{{ifempty(kdo_montoval; "neuvedeno")}}</td></tr>
 
     <tr style="background:#f4f4f4"><td colspan="2"><b>ZÁVADA — {{typ_text}}</b></td></tr>
     <tr><td><b>Popis</b></td><td>{{popis_zavady}}</td></tr>
-    <tr><td><b>Technické detaily</b></td><td>{{ifempty(technicke_detaily; "–")}}</td></tr>
-    <tr><td><b>Kdy začalo</b></td><td>{{ifempty(kdy_zacalo; "–")}}</td></tr>
-    <tr><td><b>Opakovaná závada</b></td><td>{{if(opakovana_zavada; "ANO – řešeno už dříve"; "ne")}}</td></tr>
-    <tr><td><b>Fotografie</b></td><td>{{if(ma_fotografie; "Zákazník fotku má – vyžádejte si ji při zpětném volání"; "nemá")}}</td></tr>
+    <tr><td><b>Technické detaily</b></td><td>{{ifempty(technicke_detaily; "neuvedeno")}}</td></tr>
+    <tr><td><b>Kdy začalo</b></td><td>{{ifempty(kdy_zacalo; "neuvedeno")}}</td></tr>
+    <tr><td><b>Opakovaná závada</b></td><td>{{if(opakovana_zavada; "ANO — řešeno už dříve"; "ne")}}</td></tr>
+    <tr><td><b>Fotografie</b></td><td>{{if(ma_fotografie; "Zákazník fotku má — vyžádejte si ji při zpětném volání"; "nemá")}}</td></tr>
 
     <tr style="background:#fffbe6"><td><b>Shrnutí pro technika</b></td><td>{{shrnuti_pro_technika}}</td></tr>
-    <tr><td><b>Poznámka</b></td><td>{{ifempty(poznamka; "–")}}</td></tr>
+    <tr><td><b>Poznámka</b></td><td>{{ifempty(poznamka; "neuvedeno")}}</td></tr>
   </table>
 
   <p style="font-size:12px;color:#888;margin-top:16px">
-    Vygenerováno automaticky z telefonního hovoru. Doporučený další krok: přiřadit nejbližšímu autorizovanému zastoupení podle PSČ {{adresa_psc}}.
+    Vygenerováno automaticky z telefonního hovoru (callId {{message.call.id}}).
+    Doporučený další krok: přiřadit nejbližšímu autorizovanému zastoupení podle PSČ {{adresa_psc}}.
   </p>
 </div>
 ```
+
+> **Proč odkaz místo přímé nahrávky.** V okamžiku volání nástroje hovor ještě běží, takže `recordingUrl` ani finální přepis zatím neexistují. Odkaz na `dashboard.vapi.ai/calls/{{callId}}` bude funkční, jakmile hovor skončí. Kdo chce nahrávku přímo v mailu, pošle si ji druhým scénářem (níže) — spáruje se přes stejné `callId`.
 
 ---
 

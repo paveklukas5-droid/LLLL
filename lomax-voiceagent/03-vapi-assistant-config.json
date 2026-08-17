@@ -8,8 +8,8 @@
 
   "model": {
     "provider": "anthropic",
-    "model": "claude-sonnet-5",
-    "_poznamka_model": "Doporučené pořadí pro češtinu + spolehlivé volání nástrojů: claude-sonnet-5 > gpt-4.1 > claude-haiku-4-5 (nejnižší latence, ale hůř drží dlouhý prompt). Vyber to, co ti VAPI aktuálně nabízí.",
+    "model": "claude-haiku-4-5",
+    "_poznamka_model": "claude-haiku-4-5 dává na tomhle promptu TTFT kolem 1,0 s při zlomku ceny - pro servisní linku správná volba. Když začne vypadávat z pravidel (slíbí termín, zapomene zavolat nástroj), přepni na claude-sonnet-5 a srovnej si to s cenou za hovor.",
     "temperature": 0.3,
     "maxTokens": 350,
     "emotionRecognitionEnabled": true,
@@ -28,10 +28,12 @@
 
   "transcriber": {
     "provider": "deepgram",
-    "model": "nova-2",
+    "model": "nova-3",
     "language": "cs",
-    "smartFormat": true,
+    "smartFormat": false,
+    "numerals": false,
     "endpointing": 220,
+    "_poznamka_cisla": "smartFormat i numerals MUSÍ být false. Zapnuté se snaží z diktovaných číslic udělat hezký zápis a z 6-2-1-0-0-4 udělají 621 004 nebo dokonce 61 001. U servisní linky chceš syrové číslice. nova-3 má na češtině znatelně vyšší confidence než nova-2 - nevracej se na nova-2.",
     "_poznamka_transcriber": "Alternativy pro češtinu, otestuj co ti sedne nejlíp: (1) provider 'azure', language 'cs-CZ' – velmi spolehlivé u čísel a PSČ; (2) provider 'elevenlabs', model 'scribe_v1' – nejlepší přesnost u příjmení, o něco vyšší latence. Češtinu testuj VŽDY na reálném telefonním hovoru, ne v prohlížeči."
   },
 

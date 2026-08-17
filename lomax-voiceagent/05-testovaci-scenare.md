@@ -78,14 +78,27 @@ Odpovídej ochotně na všechno, příjmení měj s háčkem.
 
 ---
 
-## T8 — Diktování s háčky a čísly
-**Ty říkáš:** příjmení „Křížová", PSČ „691 08". Na otázku o zpětném volání odpověz: „Ne, volejte mi radši na 608 991 274."
+## T8 — Diktování čísel (nejdůležitější test)
+**Ty říkáš:** příjmení „Křížová", PSČ „šest devět jedna nula osm", číslo zakázky „šest dva jedna nula nula šest dva jedna nula nula". Na otázku o zpětném volání odpověz: „Ne, volejte mi radši na 608 991 274."
 
 - ✅ Vyžádá si vyhláskování příjmení
-- ✅ Přečte alternativní číslo zpět **po skupinách**, ne jako jedno číslo
-- ✅ V payloadu je `telefon_jine` bez mezer a PSČ bez mezery
+- ✅ Čísla čte zpět **po jednotlivých číslicích**: „šest — dva — jedna — nula — nula…"
+- ❌ **Nesmí** je spojit do celku typu „šedesát jedna nula nula jedna" nebo „šest set dvacet jedna tisíc"
+- ✅ Zkratku PSČ vysloví jako „pé-es-čé", ne jako slovo
+- ✅ V payloadu je `telefon_jine` i `adresa_psc` bez mezer
 - ✅ V e-mailu je jako kontakt to nadiktované číslo, ne caller ID
-- ❌ Nesmí si domyslet, co neslyšel
+
+**Když bot čísla komolí:** příčina je skoro vždy v transcriberu, ne v promptu. Zkontroluj, že máš `nova-3` a **vypnutý** `smartFormat` i `numerals`. Zapnuté formátování z `6-2-1-0-0` udělá `61 001`.
+
+---
+
+## T8b — Strop na opakování
+Nadiktuj číslo zakázky a na botovo zopakování dvakrát po sobě řekni „to není správně".
+
+- ✅ Po druhém neúspěchu **sám ustoupí**: „Nevadí, číslo zakázky si technik dohledá podle adresy."
+- ✅ `cislo_zakazky` v payloadu je prázdné
+- ❌ **Nesmí** tě nechat diktovat totéž potřetí
+- ❌ Nesmí do pole zapsat číslo, na kterém jste se neshodli — prázdné je lepší než špatné
 
 **Toto je nejčastější místo, kde čeští voiceboti selhávají.** Když tady bot chybuje, změň transcriber (Deepgram → Azure `cs-CZ` nebo ElevenLabs Scribe) a zvyš `transcriptionEndpointingPlan.onNumberSeconds` na 0.8.
 
@@ -157,7 +170,11 @@ Mluv slovensky.
 
 | | Kontrola |
 |---|---|
-| ☐ | Ve všech 14 scénářích dorazil správný e-mail (nebo správně nedorazil) |
+| ☐ | Ve všech scénářích dorazil správný e-mail (nebo správně nedorazil) |
+| ☐ | Bot ani jednou nespojil diktované číslice do celého čísla |
+| ☐ | Mail se zobrazil jako formátovaný, ne jako zdroják HTML |
+| ☐ | Odpověď na mail míří do servisní schránky (Reply-To) |
+| ☐ | U přednostního případu je v mailu vidět červený pruh |
 | ☐ | V e-mailu je číslo, ze kterého jsi volal — a u T8 to nadiktované |
 | ☐ | PSČ nikdy nechybí u poptávky, která se má směrovat |
 | ☐ | Přednostní větev se spustila jen u T2 |

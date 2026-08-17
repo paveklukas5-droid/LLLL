@@ -35,9 +35,9 @@ Dashboard → Tools → Create Tool → typ *Function*. Vlož definici `odeslat_
 **3. VAPI — asistent**
 Create Assistant → Blank. Nastav podle `03-vapi-assistant-config.json`:
 - System prompt = celý `01-system-prompt.md`
-- Transcriber: Deepgram `nova-2`, jazyk **cs**
+- Transcriber: Deepgram `nova-3`, jazyk **cs**, `smartFormat` i `numerals` **vypnuté**
 - Voice: Azure `cs-CZ-VlastaNeural` (jistota) nebo ElevenLabs `eleven_flash_v2_5` (přirozenější)
-- Model: Claude Sonnet 5, temperature `0.3`
+- Model: Claude Haiku 4.5, temperature `0.3`
 - First message: `Dobrý den, tady Klára ze servisu LOMAX. Jak vám můžu pomoci?`
 - Připoj oba nástroje
 
@@ -79,9 +79,11 @@ Bot sbírá osobní údaje, takže:
 
 | Problém | Řešení |
 |---|---|
-| Bot komolí telefonní čísla a PSČ | Změň transcriber na Azure `cs-CZ`; zvyš `onNumberSeconds` na `0.8` |
+| Bot komolí telefonní čísla a PSČ | Vypni `smartFormat` i `numerals` a použij `nova-3`; zvyš `onNumberSeconds` na `0.8`. Zapnuté formátování je nejčastější příčina — udělá z diktovaných číslic „hezké" číslo. |
 | Bot skáče zákazníkovi do řeči | Zvyš `startSpeakingPlan.waitSeconds` na `0.7`, `onNoPunctuationSeconds` na `1.8` |
 | Bot mluví moc dlouho | Sniž `maxTokens` na 250, v promptu zvýrazni pravidlo „maximálně 2 věty" |
+| Zákazník se nedokáže domluvit na čísle zakázky | Prompt má strop na dva pokusy a pak pole nechá prázdné — pokud bot tlačí dál, zvýrazni sekci „STROP NA OPAKOVÁNÍ" v KROKU 4 |
+| Dispečerovi chodí mail jako zdroják HTML | V modulu Email nemáš ručně přidávat hlavičku `Content-Type` — nastav ji přepínačem *Content type: HTML* |
 | Nezavolá nástroj | Zkontroluj, že je nástroj připojený k asistentovi; sniž temperature na `0.2`; přidej do KROKU 6 promptu důraznější formulaci |
 | VAPI hlásí timeout nástroje | Make scénář nemá poslední modul *Webhook response*, nebo běží déle než 25 s — zkrať ho a těžké kroky (Sheets, CRM) dej až za response |
 | Hlas zní roboticky | ElevenLabs `eleven_flash_v2_5` + `optimizeStreamingLatency: 3` |

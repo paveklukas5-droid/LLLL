@@ -150,7 +150,7 @@ Dashboard → **Assistants** → **Create Assistant** → *Blank Template*. Náz
 | Pole | Hodnota |
 |---|---|
 | **Provider** | Anthropic |
-| **Model** | Claude Sonnet 5 *(když ho nevidíš, vezmi nejnovější Sonnet; alternativa GPT-4.1)* |
+| **Model** | Claude Haiku 4.5 — na tomhle promptu drží TTFT kolem 1 s za zlomek ceny. Když začne vypadávat z pravidel (slíbí termín, zapomene zavolat nástroj), přepni na Claude Sonnet 5. |
 | **First Message** | viz ČÁST 1 |
 | **System Prompt** | **celý obsah `01-system-prompt.md`** — označ vše, zkopíruj, vlož |
 | **Temperature** | `0.3` |
@@ -173,11 +173,14 @@ Chceš přirozenější projev? Přepni na **ElevenLabs**, model `eleven_flash_v
 | Pole | Hodnota |
 |---|---|
 | **Provider** | Deepgram |
-| **Model** | `nova-2` |
+| **Model** | `nova-3` ← na češtině má výrazně vyšší confidence než nova-2, nevracej se zpátky |
 | **Language** | **Czech / cs** ← nejčastější chyba je nechat tu angličtinu |
-| **Smart Format** | zapnuto |
+| **Smart Format** | **vypnuto** |
+| **Numerals** | **vypnuto** |
 
-Když bot komolí příjmení a čísla, vyzkoušej v tomhle pořadí: Azure `cs-CZ` → ElevenLabs `scribe_v1`.
+> **Smart Format a Numerals musí být vypnuté.** Zapnuté se snaží z diktovaných číslic udělat „hezký" zápis — z `6-2-1-0-0-4` pak vznikne `621 004` nebo rovnou nesmysl typu `61 001`. U servisní linky chceš syrové číslice, formátování si udělá Make.
+
+Když bot i tak komolí příjmení, vyzkoušej v tomhle pořadí: Azure `cs-CZ` → ElevenLabs `scribe_v1`.
 
 ## Záložka Tools
 

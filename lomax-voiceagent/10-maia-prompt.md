@@ -40,10 +40,19 @@ Vytvoř tyto proměnné:
 Modul 3: Router se dvěma větvemi.
 
 VĚTEV A - bez filtru - Email: Send an email
+Odesílatel: servis@lomax.cz
 Komu: servis@lomax.cz
+Reply-To: servis@lomax.cz
+Content type: HTML. NEPŘIDÁVEJ ručně hlavičku Content-Type do custom headers.
+Vyplň i textovou verzi zprávy, aby vznikl korektní multipart/alternative.
 Předmět: [{{priorita_text}}] Servisní poptávka {{cislo_poptavky}} - {{produkt_text}} - {{adresa_mesto}} {{adresa_psc}}
-Typ obsahu: HTML
-Tělo: přehledná HTML tabulka se všemi údaji zákazníka, produktu a závady. Nadpis "Nová servisní poptávka z telefonní linky". Nahoře číslo poptávky, datum přijetí a priorita. Pokud je bezpecnostni_riziko rovno true, zobraz nahoře červený varovný řádek s textem "NAHLÁŠENO BEZPEČNOSTNÍ RIZIKO - zákazník byl poučen, aby produkt nepoužíval". U telefonu použij telefon_kontakt jako odkaz tel: a pod něj menším písmem telefon_pozn. Pokud je telefon_kontakt prázdný, napiš místo něj "SKRYTÉ ČÍSLO - zákazníka nelze zpětně kontaktovat". Prázdná textová pole nahraď pomlčkou. Na konci uveď větu: "Doporučený další krok: přiřadit nejbližšímu autorizovanému zastoupení podle PSČ {{adresa_psc}}."
+Tělo: přehledná HTML tabulka se sekcemi ZÁKAZNÍK, PRODUKT, ZÁVADA. Nadpis "Nová servisní poptávka z telefonní linky", pod ním číslo poptávky, datum přijetí a priorita.
+Pokud je priorita rovna "vysoka" NEBO bezpecnostni_riziko rovno true, dej úplně nahoru široký červený pruh (pozadí #d32f2f, bílý tučný text) s nápisem "PŘEDNOSTNÍ PŘÍPAD - VYŘÍDIT MIMO POŘADÍ". Priorita musí jít poznat na první pohled, ne jen jako text v hlavičce.
+Pokud je bezpecnostni_riziko rovno true, přidej pod pruh světle červený box s textem "Nahlášeno bezpečnostní riziko. Zákazník byl v hovoru poučen, aby produkt nepoužíval a nemanipuloval s ním."
+U telefonu použij telefon_kontakt jako odkaz tel: a pod něj menším šedým písmem telefon_pozn. Pokud je telefon_kontakt prázdný, napiš červeně "SKRYTÉ ČÍSLO - zákazníka nelze zpětně kontaktovat".
+Všechna prázdná textová pole nahraď slovem "neuvedeno", ne pomlčkou. U čísla zakázky použij "neuvedeno - dohledat podle adresy".
+Pod hlavičku přidej odkaz s textem "Poslechnout hovor a přečíst přepis" vedoucí na https://dashboard.vapi.ai/calls/{{message.call.id}}
+Na konci uveď: "Vygenerováno automaticky z telefonního hovoru (callId {{message.call.id}}). Doporučený další krok: přiřadit nejbližšímu autorizovanému zastoupení podle PSČ {{adresa_psc}}."
 
 VĚTEV B - s filtrem - Email: Send an email
 Filtr pojmenuj "Přednostní" a nastav podmínku: priorita rovná se text "vysoka" NEBO bezpecnostni_riziko rovná se true.
@@ -63,6 +72,8 @@ DŮLEŽITÁ PRAVIDLA
 3. Celý scénář musí doběhnout do 20 sekund.
 4. Všechny texty v e-mailech piš česky s diakritikou.
 5. Nepřidávej modul pro odpověď zákazníkovi - e-mail zákazníka se nesbírá.
+6. V modulech Email nikdy nepřidávej vlastní hlavičku Content-Type. Vede to k nevalidnímu MIME a část klientů pak zobrazí zdroják HTML místo zprávy.
+7. Reply-To musí být vždy vyplněné na servisní schránku, jinak odpovědi chodí na účet, pod kterým scénář běží.
 ```
 
 ---
@@ -76,6 +87,9 @@ Než pustíš scénář naostro, projdi:
 - [ ] **Filtr přednostní větve** používá `vysoka` (bez diakritiky, malá písmena) — přesně tak, jak to posílá bot.
 - [ ] **`toolCallId` v response** je namapované, ne natvrdo napsané.
 - [ ] Předmět e-mailu obsahuje **PSČ** — podle něj se poptávka směruje na zastoupení.
+- [ ] **Reply-To** je vyplněné a **Content-Type není** v custom headers.
+- [ ] U přednostního případu je v mailu **červený pruh**, ne jen slovo v hlavičce.
+- [ ] Prázdná pole se zobrazují jako „neuvedeno".
 
 ---
 
