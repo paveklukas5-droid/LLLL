@@ -7,19 +7,21 @@ Dva scénáře. První je povinný (přijme poptávku a rozešle e-maily), druh�
 ## SCÉNÁŘ 1 — `LOMAX | Servisní poptávka z voicebota`
 
 ```
-[1] Webhooks → Custom webhook
-        ↓
-[1b] Filter: message.type = "tool-calls"   (POVINNÉ, viz níže)
-        ↓
-[2] Tools → Set multiple variables      (normalizace dat)
-        ↓
-[3] Router
-        ├── větev A: Email → Send an email     → servisní oddělení  (VŽDY)
-        ├── větev B: Google Sheets → Add a row  (volitelné, evidence)
-        └── větev C: Email / Slack → PŘEDNOSTNÍ (filtr: priorita = vysoka)
-        ↓
-[4] Webhooks → Webhook response          (musí být poslední!)
+[1]  Webhooks → Custom webhook
+         ↓
+[1b] Filter: message.type = "tool-calls"          (POVINNÉ)
+         ↓
+[2]  Data store → Get a record   (klíč = callId)   (ochrana proti duplicitě)
+         ↓
+[3]  Tools → Set multiple variables                (normalizace + validace)
+         ↓
+[4]  Router — TŘI vzájemně vylučující se větve
+         ├── A „Duplicita"  → Webhook response s původním číslem, žádný e-mail
+         ├── B „Chybí data" → Webhook response s CHYBOU
+         └── C „OK"         → Data store Add → Email servisu → (přednostní) → Webhook response
 ```
+
+> **Změna oproti jednodušší verzi:** dřív byl *Webhook response* jeden a až za routerem. Tady je v každé větvi vlastní, protože každá vrací něco jiného. Filtry jsou vzájemně vylučující, takže se vždy provede právě jeden.
 
 ### Modul 1 — Custom webhook
 
@@ -59,7 +61,22 @@ Na spoji mezi webhookem a modulem 2 klikni na klíč a přidej filtr:
 
 **Proč to tam musí být.** Na stejný webhook může dorazit i `end-of-call-report` nebo `status-update` — buď proto, že Server URL asistenta míří na stejnou adresu, nebo omylem při testech. Takový payload má `message.call`, ale **nemá `toolCalls`**. Bez filtru scénář doběhne, všechna pole z `arguments` jsou prázdná a servisu odejde e-mail, ve kterém je vyplněný jen telefon. To je typický příznak: *„přišel mail a bylo tam jen číslo"*.
 
-### Modul 2 — Set multiple variables (normalizace)
+### Modul 2 — Data store: Get a record (ochrana proti duplicitě)
+
+Nejdřív si založ úložiště: Make → levé menu **Data stores** → *Add data store* → název `lomax_poptavky`, struktura jedno pole `cislo_poptavky` (text).
+
+Pak v scénáři přidej **Data store → Get a record**:
+
+| Pole | Hodnota |
+|---|---|
+| Data store | `lomax_poptavky` |
+| Key | `{{message.call.id}}` |
+
+Když záznam neexistuje, modul vrátí prázdný výstup — a to je normální stav, ne chyba. Ověř, že modul **nemá** zapnuté *„Stop processing if record not found"*.
+
+**Proč to tam je.** Když si zákazník na konci hovoru stěžuje, že v e-mailu něco chybí, model má tendenci zavolat nástroj znovu. Bez tohoto modulu vzniknou dvě zakázky na jeden hovor — a dispečer neví, která platí. `callId` je pro celý hovor stejné, takže druhé volání se pozná.
+
+### Modul 3 — Set multiple variables (normalizace)
 
 | Proměnná | Vzorec |
 |---|---|
@@ -70,32 +87,41 @@ Na spoji mezi webhookem a modulem 2 klikni na klíč a přidej filtr:
 | `adresa_cela` | `adresa_ulice_cp + ", " + adresa_mesto + ", " + adresa_psc` |
 | `telefon_kontakt` | `ifempty(telefon_jine; message.call.customer.number)` |
 | `telefon_pozn` | `if(length(telefon_jine) > 0; "zákazník požádal o zpětné volání na toto číslo"; "číslo, ze kterého volal")` |
+| `data_ok` | `if(length(jmeno_prijmeni) > 0 and length(popis_zavady) > 0 and length(adresa_mesto) > 0; true; false)` |
+| `je_duplicita` | `if(length(2.cislo_poptavky) > 0; true; false)` — číslo 2 je modul Data store Get a record |
 
-### Modul 3 — Router s filtry
+### Modul 4 — Router se třemi větvemi
 
-- **Větev A** (servisní oddělení): bez filtru.
-- **Větev B** (Google Sheets): bez filtru.
-- **Větev C** (přednostní upozornění): filtr `priorita` → *Equal to* `vysoka` **OR** `bezpecnostni_riziko` = `true`. Pošli na mobil odpovědné osoby / do Slacku / SMS.
-
-### Modul 4 — Webhook response (POVINNÉ)
-
-Bez něj bude VAPI čekat a bot řekne, že se odeslání nepovedlo.
-
-- **Status:** `200`
-- **Body** (Content-Type `application/json`):
-
+**Větev A — „Duplicitní volání"**
+Filtr: `je_duplicita` → *Equal to* `true`
+Obsah větve: jediný modul **Webhook response**, status `200`, body:
 ```json
-{
-  "results": [
-    {
-      "toolCallId": "{{message.toolCalls[0].id}}",
-      "result": "Servisní poptávka {{cislo_poptavky}} byla úspěšně zaevidována a odeslána servisnímu oddělení."
-    }
-  ]
-}
+{"results":[{"toolCallId":"{{message.toolCalls[0].id}}","result":"Poptávka {{2.cislo_poptavky}} už byla pro tento hovor založena dříve. Nová se nezakládá."}]}
+```
+Bot to uslyší a zákazníkovi řekne, že poptávku už odeslal. Žádný e-mail se neposílá.
+
+**Větev B — „Chybí povinná data"**
+Filtr: `je_duplicita` = `false` **AND** `data_ok` = `false`
+Obsah větve: jediný modul **Webhook response**, status `200`, body:
+```json
+{"results":[{"toolCallId":"{{message.toolCalls[0].id}}","error":"Poptávku nelze uložit, v požadavku chybí povinné údaje (jméno, město nebo popis závady). Zopakuj volání nástroje a vyplň všechna povinná pole."}]}
 ```
 
-Text v `result` bot uslyší a může ho zákazníkovi převyprávět — proto je česky a lidsky.
+> **Klíč je slovo `error` místo `result`.** Na `error` VAPI zareaguje jako na selhání nástroje — bot řekne hlášku *„Omlouvám se, systém mi teď poptávku nepřijal"* a zkusí to znovu **s vyplněnými daty**. Kdyby tam bylo `result` s hezkou větou, bot s klidem oznámí, že je hotovo, i když se odeslala prázdná obálka. Přesně to se stalo 17. 8.: webhook natvrdo vrátil „byla úspěšně zaevidována" na prázdný payload.
+
+**Větev C — „OK, zpracovat"**
+Filtr: `je_duplicita` = `false` **AND** `data_ok` = `true`
+Moduly v této větvi, v pořadí:
+1. **Data store → Add/replace a record** — Key `{{message.call.id}}`, pole `cislo_poptavky` = `{{cislo_poptavky}}`
+2. **Email → Send an email** servisnímu oddělení (šablona níže)
+3. *(volitelně)* **Email / Slack** přednostní upozornění — přidej filtr `priorita` = `vysoka` **OR** `bezpecnostni_riziko` = `true`
+4. *(volitelně)* **Google Sheets → Add a row**
+5. **Webhook response**, status `200`, body:
+```json
+{"results":[{"toolCallId":"{{message.toolCalls[0].id}}","result":"Servisní poptávka {{cislo_poptavky}} byla zaevidována a odeslána servisnímu oddělení."}]}
+```
+
+Data store zapisuj **před** odesláním e-mailu — kdyby scénář spadl na e-mailu, duplicitní volání se aspoň nezaloží znovu.
 
 ---
 

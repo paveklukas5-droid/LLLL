@@ -37,13 +37,32 @@ Vytvoř tyto proměnné:
 - telefon_kontakt = ifempty(telefon_jine; message.call.customer.number)
 - telefon_pozn = if(length(telefon_jine) > 0; "zákazník požádal o zpětné volání na toto číslo"; "číslo, ze kterého volal")
 - adresa_cela = adresa_ulice_cp + ", " + adresa_mesto + ", " + adresa_psc
+- data_ok = if(length(jmeno_prijmeni) > 0 and length(popis_zavady) > 0 and length(adresa_mesto) > 0; true; false)
+- je_duplicita = if(length(cislo_poptavky z modulu Data store Get a record) > 0; true; false)
 - priorita_text = switch(priorita; "vysoka"; "PŘEDNOSTNÍ"; "stredni"; "Standardní"; "nizka"; "Nízká")
 - typ_text = switch(typ_pozadavku; "reklamace"; "Reklamace"; "servis"; "Servis"; "servisni_prohlidka"; "Servisní prohlídka"; "Jiné")
 - produkt_text = switch(typ_produktu; "garazova_vrata_sekcni"; "Sekční garážová vrata"; "garazova_vrata_posuvna"; "Posuvná garážová vrata"; "garazova_vrata_rolovaci"; "Rolovací garážová vrata"; "garazova_vrata_dvoukridla"; "Dvoukřídlá garážová vrata"; "predokenni_roleta"; "Předokenní roleta"; "venkovni_zaluzie"; "Venkovní žaluzie"; "vchodove_dvere"; "Vchodové dveře"; "okno"; "Okno"; "sit_proti_hmyzu"; "Síť proti hmyzu"; "rolovaci_mriz"; "Rolovací mříž"; "pohon_nebo_ovladac"; "Pohon nebo ovladač"; "Jiné")
 
-Modul 3: Router se dvěma větvemi.
+Modul 2b: Data store - Get a record.
+Nejdřív založ data store s názvem lomax_poptavky, který má jedno textové pole cislo_poptavky.
+Key nastav na {{message.call.id}}. Modul NESMÍ zastavit scénář, když záznam neexistuje - to je normální stav u nového hovoru.
 
-VĚTEV A - bez filtru - Email: Send an email
+Modul 3: Router se TŘEMI vzájemně vylučujícími se větvemi. Každá větev má na konci vlastní modul Webhook response, protože každá vrací jinou odpověď.
+
+VĚTEV DUPLICITA - filtr: je_duplicita se rovná true
+Jediný modul: Webhook response, status 200, body:
+{"results":[{"toolCallId":"{{message.toolCalls[0].id}}","result":"Poptávka už byla pro tento hovor založena dříve. Nová se nezakládá."}]}
+Žádný e-mail se v této větvi neposílá.
+
+VĚTEV CHYBI_DATA - filtr: je_duplicita se rovná false A ZÁROVEŇ data_ok se rovná false
+Jediný modul: Webhook response, status 200, body - všimni si, že se vrací klíč error, nikoli result:
+{"results":[{"toolCallId":"{{message.toolCalls[0].id}}","error":"Poptávku nelze uložit, v požadavku chybí povinné údaje (jméno, město nebo popis závady). Zopakuj volání nástroje a vyplň všechna povinná pole."}]}
+
+VĚTEV OK - filtr: je_duplicita se rovná false A ZÁROVEŇ data_ok se rovná true
+Moduly v pořadí: Data store Add/replace a record (key {{message.call.id}}, cislo_poptavky = {{cislo_poptavky}}), pak e-mail servisu, pak volitelně přednostní upozornění, a jako poslední Webhook response se statusem 200 a body:
+{"results":[{"toolCallId":"{{message.toolCalls[0].id}}","result":"Servisní poptávka {{cislo_poptavky}} byla zaevidována a odeslána servisnímu oddělení."}]}
+
+E-MAIL SERVISU (uvnitř větve OK) - Email: Send an email
 Odesílatel: servis@lomax.cz
 Komu: servis@lomax.cz
 Reply-To: servis@lomax.cz
@@ -58,20 +77,15 @@ Všechna prázdná textová pole nahraď slovem "neuvedeno", ne pomlčkou. U č�
 Pod hlavičku přidej odkaz s textem "Poslechnout hovor a přečíst přepis" vedoucí na https://dashboard.vapi.ai/calls/{{message.call.id}}
 Na konci uveď: "Vygenerováno automaticky z telefonního hovoru (callId {{message.call.id}}). Doporučený další krok: přiřadit nejbližšímu autorizovanému zastoupení podle PSČ {{adresa_psc}}."
 
-VĚTEV B - s filtrem - Email: Send an email
-Filtr pojmenuj "Přednostní" a nastav podmínku: priorita rovná se text "vysoka" NEBO bezpecnostni_riziko rovná se true.
+PŘEDNOSTNÍ UPOZORNĚNÍ (také uvnitř větve OK, hned za e-mailem servisu) - Email: Send an email
+Před tento modul dej filtr pojmenovaný "Přednostní": priorita rovná se text "vysoka" NEBO bezpecnostni_riziko rovná se true.
 Komu: servis@lomax.cz
 Předmět: PŘEDNOSTNÍ {{cislo_poptavky}} - {{jmeno_prijmeni}} - {{adresa_mesto}} - {{telefon_kontakt}}
 Tělo: krátká zpráva na tři řádky - jméno, telefon, adresa, popis závady. Nic víc, je to upozornění na mobil.
 
-Modul 4: Webhooks - Webhook response. Musí být úplně poslední modul za routerem.
-Status: 200
-Headers: Content-Type: application/json
-Body přesně tento JSON:
-{"results":[{"toolCallId":"{{message.toolCalls[0].id}}","result":"Servisní poptávka {{cislo_poptavky}} byla úspěšně zaevidována a odeslána servisnímu oddělení."}]}
 
 DŮLEŽITÁ PRAVIDLA
-1. Webhook response musí být poslední modul, jinak volající služba spadne do timeoutu.
+1. Každá větev routeru musí končit modulem Webhook response, jinak volající služba spadne do timeoutu. Filtry větví se nesmí překrývat, aby se provedla vždy právě jedna.
 2. Nepřidávej žádné moduly Sleep, Iterator ani Aggregator.
 3. Celý scénář musí doběhnout do 20 sekund.
 4. Všechny texty v e-mailech piš česky s diakritikou.
@@ -87,7 +101,10 @@ DŮLEŽITÁ PRAVIDLA
 Než pustíš scénář naostro, projdi:
 
 - [ ] **Filtr „Jen tool-calls" je hned za webhookem** — bez něj chodí prázdné maily z reportů po hovoru.
-- [ ] **Webhook response je opravdu poslední** — Maia ho občas dá do jedné z větví routeru. Musí být za routerem, ne v něm.
+- [ ] **Každá ze tří větví končí Webhook response** a filtry se nepřekrývají.
+- [ ] Větev „Chybí data" vrací **`error`**, ne `result` — jinak bot oznámí hotovo i na prázdný payload.
+- [ ] Data store `lomax_poptavky` existuje a zapisuje se **před** odesláním e-mailu.
+- [ ] **Webhook response není omylem jen jeden na konci** — Maia ho občas dá do jedné z větví routeru. Musí být za routerem, ne v něm.
 - [ ] **`telefon_kontakt` se mapuje na `message.call.customer.number`**, ne na neexistující `arguments.telefon`.
 - [ ] **Filtr přednostní větve** používá `vysoka` (bez diakritiky, malá písmena) — přesně tak, jak to posílá bot.
 - [ ] **`toolCallId` v response** je namapované, ne natvrdo napsané.

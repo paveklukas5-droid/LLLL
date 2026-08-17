@@ -19,6 +19,7 @@ Bot celý hovor vede česky, vytáhne ze zákazníka všechno, co servisní tech
 | `08-tool-rucne-ve-vapi.md` | Založení nástroje **ručně v dashboardu** — text ke zkopírování do každého pole |
 | `09-parametry.json` | Všech 22 parametrů nástroje najednou — k vložení do JSON editoru ve VAPI |
 | `10-maia-prompt.md` | Prompt pro Make Maiu, která scénář postaví za tebe |
+| `11-oprava-prazdne-argumenty.md` | **Čti, když bot volá nástroj s `arguments: {}`** — ověření schématu, validace a dedup v Make |
 
 ---
 
@@ -90,6 +91,10 @@ Bot sbírá osobní údaje, takže:
 | E-mail přišel, ale vyplněný je jen telefon | Na webhook dorazil `end-of-call-report` místo tool-callu — chybí filtr `message.type = "tool-calls"` hned za webhookem. Zkontroluj i to, jestli Server URL asistenta nemíří na stejný webhook jako nástroj. |
 | Mail přišel, ale v historii Make nic není | Koukáš do jiného scénáře, nebo má historie zúžený filtr období. Rozšiř na 24 h a projdi i *Incomplete executions*. |
 | Bot za celý hovor nezavolal nástroj | V *Calls → detail hovoru* zkontroluj, jestli tam je záznam o `odeslat_servisni_poptavku`. Když ne, zvyš důraz v KROKU 6 promptu, sniž temperature na `0.2`, případně přepni model na Claude Sonnet 5. |
+| V logu hovoru je `"arguments": {}` | Nástroj má prázdný objekt `parameters` — schéma se ve VAPI neuložilo. Postup i ověřovací příkaz jsou v `11-oprava-prazdne-argumenty.md`. |
+| Jeden hovor založil dvě zakázky | Chybí dedup podle `callId` v Make a strop „nástroj jen jednou za hovor" v promptu. |
+| Bot mluví o sobě v mužském rodě | Máš v poli System Prompt starší verzi — pravidlo 2b v `01-system-prompt.md` to řeší. |
+| Bot „opraví" značku, kterou zákazník řekl | Totéž — pravidlo o názvech v sekci 2 promptu. |
 | E-mail chodí prázdný | V Make mapuješ špatnou cestu — data jsou v `message.toolCalls[0].function.arguments`, ne v kořeni payloadu |
 
 ---
