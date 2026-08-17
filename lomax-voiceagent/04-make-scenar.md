@@ -9,6 +9,8 @@ Dva scénáře. První je povinný (přijme poptávku a rozešle e-maily), druh�
 ```
 [1] Webhooks → Custom webhook
         ↓
+[1b] Filter: message.type = "tool-calls"   (POVINNÉ, viz níže)
+        ↓
 [2] Tools → Set multiple variables      (normalizace dat)
         ↓
 [3] Router
@@ -45,6 +47,17 @@ message.call.customer.number
 Bot vyplní pole `telefon_jine` **jen tehdy**, když zákazník chce volat zpět na jiné číslo. V modulu 2 se z těch dvou zdrojů udělá jedno kontaktní číslo.
 
 > Když volající skryje číslo (anonymní hovor), je `customer.number` prázdné. Proto má e-mail pro servis u telefonu nouzový text — viz níže.
+
+### Modul 1b — Filter „Jen tool-calls" (POVINNÉ)
+
+Na spoji mezi webhookem a modulem 2 klikni na klíč a přidej filtr:
+
+| Pole | Hodnota |
+|---|---|
+| Label | `Jen tool-calls` |
+| Podmínka | `message.type` — *Text: Equal to* — `tool-calls` |
+
+**Proč to tam musí být.** Na stejný webhook může dorazit i `end-of-call-report` nebo `status-update` — buď proto, že Server URL asistenta míří na stejnou adresu, nebo omylem při testech. Takový payload má `message.call`, ale **nemá `toolCalls`**. Bez filtru scénář doběhne, všechna pole z `arguments` jsou prázdná a servisu odejde e-mail, ve kterém je vyplněný jen telefon. To je typický příznak: *„přišel mail a bylo tam jen číslo"*.
 
 ### Modul 2 — Set multiple variables (normalizace)
 

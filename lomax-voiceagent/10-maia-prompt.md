@@ -27,6 +27,10 @@ jmeno_prijmeni (text), telefon_jine (text, většinou prázdný), adresa_ulice_c
 
 POSTAV TYTO MODULY V TOMTO POŘADÍ
 
+Modul 1b: Filter hned za webhookem, ještě před vším ostatním.
+Pojmenuj ho "Jen tool-calls" a nastav podmínku: message.type se rovná textu tool-calls.
+Bez tohoto filtru projdou i zprávy end-of-call-report a status-update, které nemají pole toolCalls, a scénář pak odešle e-mail s prázdnými poli.
+
 Modul 2: Tools - Set multiple variables
 Vytvoř tyto proměnné:
 - cislo_poptavky = "SRV-" + formatDate(now; "YYYYMMDD") + "-" + upper(substring(uuid; 0; 6))
@@ -82,6 +86,7 @@ DŮLEŽITÁ PRAVIDLA
 
 Než pustíš scénář naostro, projdi:
 
+- [ ] **Filtr „Jen tool-calls" je hned za webhookem** — bez něj chodí prázdné maily z reportů po hovoru.
 - [ ] **Webhook response je opravdu poslední** — Maia ho občas dá do jedné z větví routeru. Musí být za routerem, ne v něm.
 - [ ] **`telefon_kontakt` se mapuje na `message.call.customer.number`**, ne na neexistující `arguments.telefon`.
 - [ ] **Filtr přednostní větve** používá `vysoka` (bez diakritiky, malá písmena) — přesně tak, jak to posílá bot.
@@ -114,6 +119,11 @@ Oprav mapování. Data z nástroje jsou v message.toolCalls[0].function.argument
 **Když chceš přidat evidenci do tabulky:**
 ```
 Přidej do routeru třetí větev bez filtru s modulem Google Sheets - Add a row. Sloupce: datum, cislo_poptavky, jmeno_prijmeni, telefon_kontakt, adresa_cela, produkt_text, typ_text, priorita, popis_zavady, shrnuti_pro_technika. Tato větev musí být před modulem Webhook response.
+```
+
+**Když chodí e-maily s prázdnými poli (vyplněný jen telefon):**
+```
+Přidej hned za modul Webhooks - Custom webhook filtr s podmínkou: message.type se rovná textu tool-calls. Zprávy jiného typu nesmí pokračovat do dalších modulů.
 ```
 
 **Když chceš zabezpečit webhook:**

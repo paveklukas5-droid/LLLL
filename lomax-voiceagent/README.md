@@ -87,6 +87,9 @@ Bot sbírá osobní údaje, takže:
 | Nezavolá nástroj | Zkontroluj, že je nástroj připojený k asistentovi; sniž temperature na `0.2`; přidej do KROKU 6 promptu důraznější formulaci |
 | VAPI hlásí timeout nástroje | Make scénář nemá poslední modul *Webhook response*, nebo běží déle než 25 s — zkrať ho a těžké kroky (Sheets, CRM) dej až za response |
 | Hlas zní roboticky | ElevenLabs `eleven_flash_v2_5` + `optimizeStreamingLatency: 3` |
+| E-mail přišel, ale vyplněný je jen telefon | Na webhook dorazil `end-of-call-report` místo tool-callu — chybí filtr `message.type = "tool-calls"` hned za webhookem. Zkontroluj i to, jestli Server URL asistenta nemíří na stejný webhook jako nástroj. |
+| Mail přišel, ale v historii Make nic není | Koukáš do jiného scénáře, nebo má historie zúžený filtr období. Rozšiř na 24 h a projdi i *Incomplete executions*. |
+| Bot za celý hovor nezavolal nástroj | V *Calls → detail hovoru* zkontroluj, jestli tam je záznam o `odeslat_servisni_poptavku`. Když ne, zvyš důraz v KROKU 6 promptu, sniž temperature na `0.2`, případně přepni model na Claude Sonnet 5. |
 | E-mail chodí prázdný | V Make mapuješ špatnou cestu — data jsou v `message.toolCalls[0].function.arguments`, ne v kořeni payloadu |
 
 ---
