@@ -145,6 +145,49 @@ předávat dotazy týmu — což je přesně cíl. Doporučené zdroje:
 
 ---
 
+## ⚠️ Nejdůležitější věc v knowledge base: přehledový dokument nabídky
+
+Nahrání celého webu do knowledge base **nestačí** na otázky typu „Jaké nemovitosti nabízíte?".
+Vyhledávání v knowledge base funguje na podobnost textu — najde stránku, která se dotazu podobá.
+Jenže **žádná stránka neobsahuje celou nabídku**, takže na široký dotaz vrátí náhodnou stránku
+(v testu to byla stránka Kontakt) a bot nemá z čeho odpovědět.
+
+Řešení je jeden dokument navíc, generovaný denně ze stejného feedu jako zbytek:
+
+```
+AKTUÁLNÍ NABÍDKA NEMOVITOSTÍ — stav k 18. 8. 2026
+Celkem 14 aktivních nabídek.
+
+PRODEJ — BYTY
+- Podkrovní byt 4+kk, 96 m², Brno-Královo Pole, 8 950 000 Kč, volné
+  https://www.zdenekstourac.cz/nemovitost/...
+- Byt 1+kk s parkovacím stáním, 34 m², Slavkov u Brna, 3 190 000 Kč, rezervováno
+  https://www.zdenekstourac.cz/nemovitost/...
+
+PRODEJ — DOMY
+- Vila 236 m², Kurdějov, 12 400 000 Kč, volné
+  https://www.zdenekstourac.cz/nemovitost/...
+
+PRONÁJEM
+- ...
+```
+
+Jeden takový dokument vyřeší naráz tři nejčastější typy dotazů, se kterými si jednotlivé
+stránky nemovitostí neporadí:
+
+- „Jaké nemovitosti nabízíte?" — bot má konečně z čeho odpovědět
+- „Máte něco 3+1 v Brně?" — vidí celý seznam najednou, ne jen tři náhodné inzeráty
+- „Máte něco do 6 milionů?" — může porovnat ceny mezi sebou
+
+### Druhá věc: očistit stránky od navigace
+
+Když se web nahrává po stránkách, nese každá stránka stejné menu, hlavičku a patičku.
+Tenhle balast tvoří u krátkých stránek většinu textu, všechny stránky si pak jsou navzájem
+podobné a vyhledávání ztrácí přesnost — projeví se to přesně takhle: na dotaz o nemovitostech
+se vrátí stránka Kontakt. Při importu proto nechte **jen hlavní obsah stránky**.
+
+---
+
 ## Proč jen jeden tool
 
 Zvažoval jsem přidání toolu na vyhledávání nemovitostí. **Není potřeba**, protože se knowledge base
