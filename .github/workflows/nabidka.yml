@@ -1,0 +1,36 @@
+name: Přehled nabídky pro knowledge base
+
+on:
+  schedule:
+    - cron: '20 3 * * *'   # každý den 3:20 UTC = 5:20 SELČ / 4:20 SEČ
+  workflow_dispatch:        # ruční spuštění tlačítkem v záložce Actions
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Vygenerovat přehled nabídky
+        env:
+          SITE_URL: https://www.zdenekstourac.cz
+        run: node tools/generate-nabidka.mjs
+
+      - name: Commitnout, pokud se nabídka změnila
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- chatbot-realitni-kancelar/kb/; then
+            echo "Nabídka beze změny — není co commitovat."
+          else
+            git add chatbot-realitni-kancelar/kb/
+            git commit -m "Aktualizace přehledu nabídky ($(date +%Y-%m-%d))"
+            git push
+          fi
