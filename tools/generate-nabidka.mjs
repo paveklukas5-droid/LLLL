@@ -178,8 +178,10 @@ async function fromSitemap() {
     if (urls.length) break;
   }
 
-  urls = [...new Set(urls)].filter((u) => /\/nemovitost\//i.test(u));
-  if (!urls.length) throw new Error('V sitemap jsem nenašel žádné URL s /nemovitost/');
+  // Skutečný vzor zjištěný z reálné sitemapy: detaily jsou na /reality/<slug>-<ID>/,
+  // ne na /nemovitost/ (ten vzor je zjevně z verze webu před redesignem).
+  urls = [...new Set(urls)].filter((u) => /\/reality\//i.test(u));
+  if (!urls.length) throw new Error('V sitemap jsem nenašel žádné URL s /reality/');
 
   const items = await fetchDetailPages(urls);
   return { source: 'sitemap.xml + detailní stránky', items };
@@ -189,37 +191,44 @@ async function fromSitemap() {
 
 /** Nezávisí na CMS ani na sitemapě — prochází lidskou výpisovou stránku tak, jak by to dělal návštěvník. */
 async function fromListingPage() {
-  const startPaths = ['/nemovitosti/', '/nemovitosti', '/nabidka-nemovitosti/'];
-  let html, base;
-  for (const p of startPaths) {
-    try { html = await get(`${SITE}${p}`); base = p; break; } catch { /* zkus další */ }
-  }
-  if (!html) throw new Error('Výpisová stránka /nemovitosti/ není dostupná');
+  // Skutečné kategorie zjištěné z sitemapy (web nemá jednu souhrnnou /nemovitosti/,
+  // ale zvlášť stránky pro prodej po druzích a zvlášť pro pronájem).
+  const startPaths = [
+    '/prodej/byty/', '/prodej/rodinne-domy,rekreacni-objekty/', '/pronajem/',
+    '/prodej/pozemky/', '/prodej/komercni-prostory/', '/prodej/garaze/',
+  ];
 
   const hrefsOf = (h) => [...h.matchAll(/href=["']([^"']+)["']/gi)].map((m) => m[1]);
   const toAbs = (u) => (u.startsWith('http') ? u : `${SITE}${u.startsWith('/') ? '' : '/'}${u}`);
-
   const detailFrom = (h) => [...new Set(
-    hrefsOf(h).filter((u) => /\/nemovitost\//i.test(u)).map(toAbs)
+    hrefsOf(h).filter((u) => /\/reality\//i.test(u)).map(toAbs)
   )];
 
-  let urls = detailFrom(html);
+  let urls = [];
+  let foundAny = false;
+  for (const base of startPaths) {
+    let html;
+    try { html = await get(`${SITE}${base}`); } catch { continue; }
+    foundAny = true;
+    urls.push(...detailFrom(html));
 
-  // Jednoduchá paginace: číslované odkazy nebo /page/2/, /strana-2/ apod. na první stránce.
-  const pageLinks = [...new Set(
-    hrefsOf(html)
-      .filter((u) => new RegExp(`${base.replace(/\/$/, '')}.*(page|strana)[-/]?\\d`, 'i').test(u))
-      .map(toAbs)
-  )];
-  for (const pu of pageLinks.slice(0, 15)) {
-    try { urls.push(...detailFrom(await get(pu))); } catch { /* přeskoč */ }
+    // Jednoduchá paginace: číslované odkazy nebo /page/2/, /strana-2/ apod. na první stránce dané kategorie.
+    const pageLinks = [...new Set(
+      hrefsOf(html)
+        .filter((u) => new RegExp(`${base.replace(/[/,]/g, '\\$&')}.*(page|strana)[-/]?\\d`, 'i').test(u))
+        .map(toAbs)
+    )];
+    for (const pu of pageLinks.slice(0, 15)) {
+      try { urls.push(...detailFrom(await get(pu))); } catch { /* přeskoč */ }
+    }
   }
+  if (!foundAny) throw new Error('Žádná z výpisových kategorií (prodej/pronájem) není dostupná');
 
   urls = [...new Set(urls)];
-  if (!urls.length) throw new Error('Na výpisové stránce jsem nenašel žádné odkazy na /nemovitost/');
+  if (!urls.length) throw new Error('Na výpisových stránkách jsem nenašel žádné odkazy na /reality/');
 
   const items = await fetchDetailPages(urls);
-  return { source: 'procházení výpisové stránky /nemovitosti/', items };
+  return { source: 'procházení výpisových kategorií (/prodej/…, /pronajem/)', items };
 }
 
 /** Společné pro sitemap i listing-page adaptér: stáhne a naparsuje jednotlivé detaily nemovitostí. */
@@ -371,7 +380,7 @@ ${out.join('\n')}
 const ADAPTERS = [
   ['WP REST API', fromWpRest],
   ['sitemap.xml', fromSitemap],
-  ['procházení /nemovitosti/', fromListingPage],
+  ['procházení výpisových kategorií', fromListingPage],
 ];
 
 /** Jen v --probe: ať je v logu vidět PROČ zdroje nefungují, ne jen ŽE nefungují. */
@@ -397,10 +406,11 @@ async function diagnostika() {
     }
   }
 
-  for (const p of ['/nemovitosti/', '/nemovitosti', '/nabidka-nemovitosti/']) {
+  for (const p of ['/prodej/byty/', '/prodej/rodinne-domy,rekreacni-objekty/', '/pronajem/']) {
     const r = await getSafe(`${SITE}${p}`);
     const blocked = r.ok && looksBlocked(r.text) ? ' ⚠ vypadá jako anti-bot stránka' : '';
-    log(`\n${p}: HTTP ${r.status}, ${r.text.length} znaků${blocked}`);
+    const hits = r.ok ? [...new Set([...r.text.matchAll(/href=["']([^"']*\/reality\/[^"']*)["']/gi)].map((m) => m[1]))].length : 0;
+    log(`\n${p}: HTTP ${r.status}, ${r.text.length} znaků, odkazů na /reality/: ${hits}${blocked}`);
   }
 
   // Homepage: nejuniverzálnější zdroj — najdi odkaz na nabídku přímo v menu, jak by to udělal návštěvník.
@@ -415,14 +425,14 @@ async function diagnostika() {
     log(`  odkazy v menu, jejichž text obsahuje "nemovit": ${navLinks.length}`);
     if (navLinks.length) log('  ' + navLinks.slice(0, 10).join('\n  '));
 
-    const directHits = [...new Set([...home.text.matchAll(/href=["']([^"']*\/nemovitost[^"']*)["']/gi)].map((m) => m[1]))];
-    log(`  přímé odkazy obsahující "/nemovitost": ${directHits.length}`);
+    const directHits = [...new Set([...home.text.matchAll(/href=["']([^"']*\/reality\/[^"']*)["']/gi)].map((m) => m[1]))];
+    log(`  přímé odkazy obsahující "/reality/": ${directHits.length}`);
     if (directHits.length) log('  ' + directHits.slice(0, 5).join('\n  '));
   }
 
-  // Detail, o kterém víme z dřívějšího vyhledávání, že existoval — ověří, jestli /nemovitost/ URL vzor ještě platí.
-  const known = await getSafe(`${SITE}/nemovitost/prodej-vily-236-m%C2%B2-kurdejov/`);
-  log(`\nznámá detailní URL (z dřívějšího vyhledávání): HTTP ${known.status}, ${known.text.length} znaků`);
+  // Ověřená detailní URL přímo ze sitemapy (viz předchozí běh) — potvrzuje, že /reality/ vzor je aktuální.
+  const known = await getSafe(`${SITE}/reality/prodej-1-2-podilu-rodinneho-domu-se-zahradou-lomnice-u-tisnova-0031/`);
+  log(`\nznámá detailní URL (ze sitemapy): HTTP ${known.status}, ${known.text.length} znaků`);
 
   log('\n── Konec diagnostiky ──\n');
 }
