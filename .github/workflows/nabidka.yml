@@ -53,10 +53,12 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet -- chatbot-realitni-kancelar/kb/; then
+          # git diff nevidí nesledované soubory — musí se nejdřív "add", jinak
+          # se první vygenerovaný soubor tváří jako "beze změny" a nic se nestáhne.
+          git add -A -- chatbot-realitni-kancelar/kb/
+          if git diff --cached --quiet; then
             echo "Nabídka beze změny — není co commitovat."
           else
-            git add chatbot-realitni-kancelar/kb/
             git commit -m "Aktualizace přehledu nabídky ($(date +%Y-%m-%d))"
             git push
           fi
