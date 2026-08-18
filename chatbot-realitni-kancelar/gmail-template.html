@@ -1,0 +1,110 @@
+<!-- ============================================================
+     Gmail → Send an email → Body type: Raw HTML
+     Proměnné k namapování:
+       {{cele_jmeno}}  {{telefonni_cislo}}  {{email}}
+       {{popis_problemu}}  {{shrnuti_problemu}}
+     ============================================================ -->
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">Nová poptávka z chatbota — {{cele_jmeno}}, {{telefonni_cislo}}</div>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#eef1f5;margin:0;padding:24px 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
+  <tr>
+    <td align="center">
+
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background-color:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(16,24,40,0.10);">
+
+        <!-- Hlavička -->
+        <tr>
+          <td style="background-color:#1e293b;padding:22px 28px;">
+            <div style="color:#ffffff;font-size:17px;font-weight:700;letter-spacing:-0.2px;line-height:1.3;">
+              Nová poptávka z chatbota
+            </div>
+            <div style="color:#94a3b8;font-size:13px;padding-top:4px;line-height:1.4;">
+              Realitní tým Zdeňka Štourače &middot; zdenekstourac.cz
+            </div>
+          </td>
+        </tr>
+
+        <!-- Shrnutí -->
+        <tr>
+          <td style="padding:26px 28px 6px 28px;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#64748b;padding-bottom:9px;">
+              Shrnutí
+            </div>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="background-color:#f1f5f9;border-left:4px solid #1e293b;border-radius:0 6px 6px 0;padding:15px 18px;color:#0f172a;font-size:15px;line-height:1.6;white-space:pre-wrap;">{{shrnuti_problemu}}</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Kontakt -->
+        <tr>
+          <td style="padding:26px 28px 6px 28px;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#64748b;padding-bottom:9px;">
+              Kontakt na klienta
+            </div>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #e2e8f0;border-radius:6px;">
+              <tr>
+                <td width="120" style="padding:13px 18px;border-bottom:1px solid #e2e8f0;color:#64748b;font-size:13px;vertical-align:top;">Jméno</td>
+                <td style="padding:13px 18px;border-bottom:1px solid #e2e8f0;color:#0f172a;font-size:15px;font-weight:600;vertical-align:top;">{{cele_jmeno}}</td>
+              </tr>
+              <tr>
+                <td width="120" style="padding:13px 18px;border-bottom:1px solid #e2e8f0;color:#64748b;font-size:13px;vertical-align:top;">Telefon</td>
+                <td style="padding:13px 18px;border-bottom:1px solid #e2e8f0;font-size:15px;font-weight:600;vertical-align:top;">
+                  <a href="tel:{{telefonni_cislo}}" style="color:#1d4ed8;text-decoration:none;">{{telefonni_cislo}}</a>
+                </td>
+              </tr>
+              <tr>
+                <td width="120" style="padding:13px 18px;color:#64748b;font-size:13px;vertical-align:top;">E-mail</td>
+                <td style="padding:13px 18px;font-size:15px;font-weight:600;vertical-align:top;">
+                  <a href="mailto:{{email}}" style="color:#1d4ed8;text-decoration:none;word-break:break-all;">{{email}}</a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Tlačítka -->
+        <tr>
+          <td style="padding:20px 28px 6px 28px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="background-color:#1e293b;border-radius:6px;">
+                  <a href="tel:{{telefonni_cislo}}" style="display:inline-block;padding:11px 22px;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;">Zavolat klientovi</a>
+                </td>
+                <td style="width:10px;">&nbsp;</td>
+                <td style="border:1px solid #cbd5e1;border-radius:6px;">
+                  <a href="mailto:{{email}}" style="display:inline-block;padding:10px 22px;color:#1e293b;font-size:14px;font-weight:600;text-decoration:none;">Odpovědět e-mailem</a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Celý popis -->
+        <tr>
+          <td style="padding:26px 28px 30px 28px;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#64748b;padding-bottom:9px;">
+              Celý popis od klienta
+            </div>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="background-color:#fafafa;border:1px solid #e2e8f0;border-radius:6px;padding:16px 18px;color:#334155;font-size:14px;line-height:1.65;white-space:pre-wrap;">{{popis_problemu}}</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Patička -->
+        <tr>
+          <td style="background-color:#f8fafc;border-top:1px solid #e2e8f0;padding:16px 28px;color:#94a3b8;font-size:12px;line-height:1.5;">
+            Automaticky odesláno chatbotem z webu zdenekstourac.cz. Odpovězte prosím klientovi přímo na kontakt výše.
+          </td>
+        </tr>
+
+      </table>
+
+    </td>
+  </tr>
+</table>

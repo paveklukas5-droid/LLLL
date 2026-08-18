@@ -7,8 +7,10 @@ postavená ve stejné struktuře jako prompt pro Climax.cz.
 
 | Soubor | Kam patří |
 |---|---|
-| [`GLOBAL_PROMPT.md`](GLOBAL_PROMPT.md) | pole **Global prompt** / System prompt |
-| [`INSTRUCTIONS.md`](INSTRUCTIONS.md) | pole **Instructions** |
+| [`GLOBAL_PROMPT.md`](GLOBAL_PROMPT.md) | chatbot → pole **Global prompt** / System prompt |
+| [`INSTRUCTIONS.md`](INSTRUCTIONS.md) | chatbot → pole **Instructions** |
+| [`GROQ_PROMPT.md`](GROQ_PROMPT.md) | Make → modul **Groq** (model, nastavení, obě zprávy) |
+| [`gmail-template.html`](gmail-template.html) | Make → modul **Gmail**, pole **Content** (Body type: Raw HTML) |
 
 Obsah vlož **bez** nadpisu souboru — text začíná od `# Role`, resp. `# Instructions`.
 
@@ -16,11 +18,31 @@ Obsah vlož **bez** nadpisu souboru — text začíná od `# Role`, resp. `# Ins
 
 Stejný jeden tool jako u Climaxu:
 
-**`poslat_email`** — tool si sám vyžádá od klienta:
-- Jméno
-- Telefonní číslo
-- E-mailová adresa
-- Popis dotazu nebo poptávky
+**`poslat_email`** — čtyři pole:
+
+| Pole | Kdo ho plní |
+|---|---|
+| `cele_jmeno` | tool si vyžádá od klienta |
+| `telefonni_cislo` | tool si vyžádá od klienta |
+| `email` | tool si vyžádá od klienta |
+| `popis_problemu` | **skládá chatbot** ze zaznamenané konverzace |
+
+Páté pole `shrnuti_problemu` v e-mailu **negeneruje chatbot, ale modul Groq** ve scénáři —
+z `popis_problemu` udělá jednu až tři věty na začátek e-mailu, aby tým hned viděl, o co jde.
+
+### Scénář v Make
+
+```
+Webhook (z chatbota)  →  Groq (shrnutí)  →  Gmail (HTML e-mail)
+   cele_jmeno                                  cele_jmeno
+   telefonni_cislo                             telefonni_cislo
+   email                                       email
+   popis_problemu                              popis_problemu
+                         shrnuti_problemu  →   shrnuti_problemu
+```
+
+Pozn.: názvy polí obsahují slovo „problem", ale nesou poptávky — jsou zachované podle
+zadání, aby seděly na existující scénář. Na chování bota to nemá vliv.
 
 Prompt navíc instruuje bota, aby do **popisu poptávky** shrnul kontext, který už v konverzaci zazněl
 (typ poptávky, nemovitost, lokalita, dispozice, časový horizont) — tým tak dostane kvalifikovanou
