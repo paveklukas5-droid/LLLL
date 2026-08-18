@@ -41,13 +41,22 @@ async function getSafe(url) {
 const looksBlocked = (t = '') =>
   /just a moment|cf-browser-verification|attention required|access denied|captcha|ddos-guard/i.test(t);
 
-const stripTags = (s = '') => s
-  .replace(/<script[\s\S]*?<\/script>/gi, ' ')
-  .replace(/<style[\s\S]*?<\/style>/gi, ' ')
-  .replace(/<[^>]+>/g, ' ')
-  .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<')
-  .replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#0?39;|&#x27;/g, "'")
-  .replace(/\s+/g, ' ').trim();
+// Reálné titulky z webu obsahují HTML entity (&sup2;, &ndash;…) — bez plného
+// dekódování zůstanou v textu jako "m&sup2;" a rozbijí regexy na výměru i lokalitu.
+const NAMED_ENTITIES = {
+  nbsp: ' ', amp: '&', lt: '<', gt: '>', quot: '"', apos: "'",
+  sup2: '²', sup3: '³', ndash: '–', mdash: '—', hellip: '…',
+};
+const decodeEntities = (s) => s
+  .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+  .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(parseInt(d, 10)))
+  .replace(/&([a-z0-9]+);/gi, (m, name) => NAMED_ENTITIES[name.toLowerCase()] ?? m);
+
+const stripTags = (s = '') => decodeEntities(
+  s.replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+).replace(/\s+/g, ' ').trim();
 
 const czNum = (n) => n.toLocaleString('cs-CZ').replace(/ /g, ' ');
 
@@ -61,8 +70,8 @@ const TYPY = [
 
 const DRUHY = [
   [/\bbyt/i, 'Byty'],
-  [/\b(dom|vil|chalup|chat)/i, 'Domy a rekreační objekty'],
-  [/\b(pozem|parcel)/i, 'Pozemky'],
+  [/\b(dom|dům|sídl|vil|chalup|chat)/i, 'Domy a rekreační objekty'],
+  [/\b(pozem|parcel|zahrad)/i, 'Pozemky'],
   [/\b(kancel|obchod|komerč|restaur|sklad|výrobn)/i, 'Komerční prostory'],
   [/\bgaráž/i, 'Garáže'],
 ];
@@ -72,40 +81,64 @@ const STAVY = [
   [/rezervo/i, 'rezervováno'],
 ];
 
+/** Marketingové titulky zmiňují víc věcí najednou (byt SE zahradou) —
+ *  vyhraje kategorie, jejíž klíčové slovo se v titulku objeví nejdřív,
+ *  ne první shoda podle pořadí v tabulce. */
+function matchEarliest(table, text, fallback) {
+  let best = null, bestIdx = Infinity;
+  for (const [re, val] of table) {
+    const m = text.match(re);
+    if (m && m.index < bestIdx) { bestIdx = m.index; best = val; }
+  }
+  return best ?? fallback;
+}
+
 function match(table, text, fallback) {
   for (const [re, val] of table) if (re.test(text)) return val;
   return fallback;
 }
+// Stavová slova, která se na webu lepí za titulek jako značka (", REZERVOVÁNO")
+// a bez vyloučení se omylem vytáhnou jako lokalita.
+const STAV_SLOVO = /^(rezervov[aá]no|prod[aá]no|novinka|sleva|akce|v jednání)$/i;
 
 /** Z názvu a textu inzerátu vytáhne strukturované parametry. */
 function parseItem(title, extra = '') {
   const hay = `${title} ${extra}`;
 
-  const dispo = title.match(/\b(\d\s*\+\s*(?:kk|\d))\b/i)?.[1]?.replace(/\s+/g, '');
-  const plocha = hay.match(/(\d[\d\s]{0,6})\s*m(?:2|²|<sup>2)/i)?.[1]?.replace(/\s+/g, '');
-  const cenaRaw = hay.match(/(\d[\d\s ]{4,})\s*(?:Kč|CZK)/i)?.[1];
-  const cena = cenaRaw ? Number(cenaRaw.replace(/[\s ]/g, '')) : null;
+  // "3+kk" i holé "2kk" (na webu obojí formát) — ale ne bez "kk", aby se
+  // nechytly dvě sousední číslice z ceny nebo výměry (např. "24 990 000").
+  const dispo = title.match(/\b(\d\s*\+\s*(?:kk|\d)|\d\s*kk)\b/i)?.[1]?.replace(/\s+/g, '');
 
-  // Lokalita: poslední smysluplný úsek za čárkou v názvu
+  // Výměra bývá i s desetinnou čárkou/tečkou ("99.6 m²", "45,2m²").
+  const plochaRaw = hay.match(/(\d[\d\s]{0,4}(?:[.,]\d{1,2})?)\s*m(?:2|²)/i)?.[1];
+  const plocha = plochaRaw ? Number(plochaRaw.replace(/\s/g, '').replace(',', '.')) : null;
+
+  const cenaRaw = hay.match(/(\d[\d\s ]{4,})\s*(?:Kč|CZK)/i)?.[1];
+  const cena = cenaRaw ? Number(cenaRaw.replace(/[\s ]/g, '')) : null;
+
+  // Lokalita: poslední smysluplný úsek za čárkou — ale přeskoč stavové
+  // značky a číselné/cenové útržky, ať se "REZERVOVÁNO" nevydává za obec.
   let lokalita = null;
   const parts = title.split(/[,–]/).map((p) => p.trim()).filter(Boolean);
-  if (parts.length > 1) {
-    const last = parts[parts.length - 1];
-    if (!/m(2|²)|Kč|\d{4}/i.test(last)) lokalita = last;
+  for (let i = parts.length - 1; i >= 1; i--) {
+    const p = parts[i];
+    if (STAV_SLOVO.test(p) || /m(2|²)|Kč|^\d+$/i.test(p)) continue;
+    lokalita = p;
+    break;
   }
   // Bez čárky: zkus úsek za pomlčkou, jinak samotný název obce v textu
   if (!lokalita) {
     const dash = title.match(/\s[-–]\s*([A-ZÁ-Ž][\wÁ-Žá-ž .]{2,30})$/);
-    if (dash) lokalita = dash[1].trim();
+    if (dash && !STAV_SLOVO.test(dash[1].trim())) lokalita = dash[1].trim();
   }
 
   return {
     title: title.trim(),
     typ: match(TYPY, title, 'Prodej'),
-    druh: match(DRUHY, title, 'Ostatní'),
+    druh: matchEarliest(DRUHY, title, 'Ostatní'),
     stav: match(STAVY, hay, 'volné'),
     dispo: dispo || null,
-    plocha: plocha ? Number(plocha) : null,
+    plocha,
     cena,
     lokalita,
   };
