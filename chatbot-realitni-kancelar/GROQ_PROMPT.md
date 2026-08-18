@@ -24,12 +24,13 @@ jako záložní variantu.
 | Pole | Hodnota |
 |---|---|
 | **Model** | `openai/gpt-oss-120b` |
-| **Max tokens returned** | `300` |
+| **Max tokens returned** | `500` |
 | **Temperature** (Advanced settings) | `0.3` |
 | **Reasoning effort** (Advanced settings, je-li k dispozici) | `low` |
 
 `Max tokens` nedávejte níž — gpt-oss je reasoning model a část tokenů spotřebuje na
-vnitřní uvažování. Při nízkém limitu by se výstup mohl useknout uprostřed věty.
+vnitřní uvažování. Protože mu navíc posíláte celý přepis konverzace, je 500 bezpečná
+rezerva; při nízkém limitu by se výstup usekl uprostřed věty.
 
 ---
 
@@ -38,7 +39,9 @@ vnitřní uvažování. Při nízkém limitu by se výstup mohl useknout uprost�
 ### 1. položka — Role: **System**
 
 ```
-Jsi asistent realitní kanceláře Realitní tým Zdeňka Štourače. Tvým jediným úkolem je z popisu poptávky od klienta vytvořit krátké shrnutí pro realitní tým, který ho uvidí v notifikačním e-mailu.
+Jsi asistent realitní kanceláře Realitní tým Zdeňka Štourače. Tvým jediným úkolem je z poptávky klienta vytvořit krátké shrnutí pro realitní tým, který ho uvidí v notifikačním e-mailu.
+
+Na vstupu dostaneš krátký popis poptávky a přepis konverzace klienta s chatbotem. Čerpej z obojího — přepis je bohatší zdroj a bývají v něm detaily, které v popisu chybí.
 
 PRAVIDLA VÝSTUPU:
 - Odpovídáš VÝHRADNĚ textem shrnutí. Žádný úvod, žádný komentář, žádné uvozovky, žádný markdown, žádné odrážky, žádné nadpisy.
@@ -65,27 +68,24 @@ Právní dotaz – klient zdědil s bratrem rodinný dům a řeší, jak postupo
 ### 2. položka — Role: **User**
 
 ```
-Jméno klienta: {{cele_jmeno}}
+Jméno klienta: {{2.cele_jmeno}}
 
 Popis poptávky:
-{{popis_problemu}}
+{{2.popis_problemu}}
+
+Přepis konverzace s chatbotem:
+{{2.shrnuti_problemu}}
 ```
 
-> `{{cele_jmeno}}` a `{{popis_problemu}}` nahraďte namapovanými proměnnými z předchozího
-> modulu (webhooku). Jméno tam je jen jako kontext — v shrnutí se opakovat nemá, ta
-> informace je v e-mailu vedle.
+> Čísla modulů (`2` = webhook) upravte podle svého scénáře. Jméno je tam jen jako kontext —
+> v shrnutí se opakovat nemá, ta informace je v e-mailu hned vedle.
 
 ---
 
 ## Napojení na Gmail
 
-V Gmail modulu do `{{shrnuti_problemu}}` namapujte z Groq modulu:
-
-```
-{{ <číslo Groq modulu>.choices[].message.content }}
-```
-
-Například `{{2.choices[].message.content}}`, pokud je Groq druhý modul ve scénáři.
+Groq modul vystavuje výstup jako **Result**. V Gmail modulu tedy do místa shrnutí
+namapujte `{{9.result}}` (9 = číslo Groq modulu ve vašem scénáři).
 
 ## Pojistka, když Groq spadne
 
@@ -93,6 +93,6 @@ Groq má na free tieru rate limity a občas vrátí chybu. Aby kvůli tomu nezap
 
 - na Groq modulu zapněte **Error handler → Resume** a jako náhradní výstup dejte
   prázdný řetězec, nebo
-- v Gmail modulu použijte `{{ifempty(2.choices[].message.content; "Shrnutí se nepodařilo vygenerovat – přečtěte prosím celý popis níže.")}}`
+- v Gmail modulu použijte `{{ifempty(9.result; "Shrnutí se nepodařilo vygenerovat – přečtěte prosím popis a přepis níže.")}}`
 
 E-mail pak dorazí i bez shrnutí. Celý popis od klienta je v něm stejně, takže tým o nic nepřijde.
