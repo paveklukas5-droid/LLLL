@@ -105,9 +105,11 @@ to jediná místa, kde by mohla být nepřesnost:
 Prompt počítá s tím, že ~95 % dotazů pokryje knowledge base. Čím je bohatší, tím míň bude bot
 předávat dotazy týmu — což je přesně cíl. Doporučené zdroje:
 
-1. **Aktuální nabídka nemovitostí** — ideálně automatický feed (dispozice, výměra, lokalita, cena,
-   stav, energetický štítek, stav *volné / rezervováno / prodáno*). Bez tohohle bot u nabídky
-   neodpoví nic konkrétního.
+1. **Aktuální nabídka nemovitostí** — knowledge base se obnovuje automaticky každý den, což je
+   pro nabídku nemovitostí to hlavní. Ať v datech u každé nemovitosti je: dispozice, výměra,
+   lokalita, cena, stav, energetický štítek, **stav dostupnosti** (*volné / rezervováno / prodáno*)
+   a **odkaz na detail** na webu. Jedna nemovitost = jeden ucelený záznam, ne rozsekaná do víc
+   kusů — jinak bot smíchá parametry dvou bytů dohromady.
 2. **Všechny stránky sekce `/prace/`** — služby, aukce, právní servis, home staging, hypotéky
 3. **Stránka „Více o nás"** a profily členů týmu
 4. **Reference a recenze klientů**
@@ -118,6 +120,24 @@ předávat dotazy týmu — což je přesně cíl. Doporučené zdroje:
    jak dlouho prodej trvá, kdo platí provizi, jak funguje rezervační smlouva a úschova,
    prodej nemovitosti se zástavou/exekucí, dědictví a spoluvlastnické podíly, PENB,
    prodej s hypotékou, zastupování kupujícího
+
+---
+
+## Proč jen jeden tool
+
+Zvažoval jsem přidání toolu na vyhledávání nemovitostí. **Není potřeba**, protože se knowledge base
+denně sama obnovuje — tím odpadá hlavní důvod, kvůli kterému by se vyplatil (zastaralé inzeráty).
+
+Zbývá jediná slabina: knowledge base hledá podle podobnosti textu, ne podle číselných rozsahů,
+takže dotaz typu „byt do 6 milionů" může vytáhnout i dražší nemovitosti. U portfolia v řádu desítek
+nemovitostí to není problém — bot si čísla ověří sám (viz pravidlo 6 v sekci *Když se klient ptá
+na konkrétní nemovitost z nabídky*). Znovu to zvažte, až bude aktivních inzerátů přes ~100.
+
+Každý tool navíc je další místo, kde se model může splést ve výběru. S jedním toolem je routing
+prakticky neomylný a pravidlo tří zámků drží. To je funkce, ne nedostatek.
+
+Pokud byste chtěli poptávky automaticky směrovat do CRM, přidejte do stávajícího toolu parametr
+`typ_poptavky` — ne druhý tool.
 
 ## Doporučené testovací scénáře
 
