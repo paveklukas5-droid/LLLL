@@ -380,23 +380,49 @@ async function diagnostika() {
 
   const robots = await getSafe(`${SITE}/robots.txt`);
   log(`robots.txt: HTTP ${robots.status}${robots.networkError ? ` (${robots.networkError})` : ''}`);
+  let sitemapUrls = [];
   if (robots.ok) {
-    const sitemapLines = robots.text.split('\n').filter((l) => /^sitemap:/i.test(l));
-    log(sitemapLines.length ? `  Sitemap: řádky:\n  ${sitemapLines.join('\n  ')}` : '  (žádný Sitemap: řádek)');
+    sitemapUrls = [...robots.text.matchAll(/^sitemap:\s*(\S+)/gim)].map((m) => m[1]);
+    log(sitemapUrls.length ? `  Sitemap: řádky:\n  ${sitemapUrls.join('\n  ')}` : '  (žádný Sitemap: řádek)');
   }
 
-  const listing = await getSafe(`${SITE}/nemovitosti/`);
-  log(`\n/nemovitosti/: HTTP ${listing.status}${listing.networkError ? ` (${listing.networkError})` : ''}, ${listing.text.length} znaků`);
-  if (listing.ok && looksBlocked(listing.text)) log('  ⚠ obsah vypadá jako stránka ochrany proti botům (Cloudflare/CAPTCHA apod.)');
-  if (listing.ok) {
-    const links = [...new Set([...listing.text.matchAll(/href=["']([^"']*\/nemovitost\/[^"']*)["']/gi)].map((m) => m[1]))];
-    log(`  odkazů na /nemovitost/ na stránce: ${links.length}`);
-    if (links.length) log('  ukázka: ' + links.slice(0, 3).join(', '));
+  // Ukaž skutečný obsah deklarované sitemapy — žádné hádání, jen fakta.
+  for (const smUrl of sitemapUrls.slice(0, 2)) {
+    const sm = await getSafe(smUrl);
+    log(`\n${smUrl}: HTTP ${sm.status}, ${sm.text.length} znaků`);
+    if (sm.ok) {
+      const locs = [...sm.text.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/gi)].map((m) => m[1]);
+      log(`  <loc> celkem: ${locs.length}`);
+      if (locs.length) log('  ukázka:\n  ' + locs.slice(0, 15).join('\n  '));
+    }
   }
 
-  const wpTypes = await getSafe(`${SITE}/wp-json/wp/v2/types`);
-  log(`\n/wp-json/wp/v2/types: HTTP ${wpTypes.status}${wpTypes.networkError ? ` (${wpTypes.networkError})` : ''}`);
-  if (wpTypes.ok) log('  ' + wpTypes.text.slice(0, 300));
+  for (const p of ['/nemovitosti/', '/nemovitosti', '/nabidka-nemovitosti/']) {
+    const r = await getSafe(`${SITE}${p}`);
+    const blocked = r.ok && looksBlocked(r.text) ? ' ⚠ vypadá jako anti-bot stránka' : '';
+    log(`\n${p}: HTTP ${r.status}, ${r.text.length} znaků${blocked}`);
+  }
+
+  // Homepage: nejuniverzálnější zdroj — najdi odkaz na nabídku přímo v menu, jak by to udělal návštěvník.
+  const home = await getSafe(`${SITE}/`);
+  log(`\n/ (homepage): HTTP ${home.status}, ${home.text.length} znaků`);
+  if (home.ok) {
+    const navLinks = [...new Set(
+      [...home.text.matchAll(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]{0,60}?)<\/a>/gi)]
+        .filter((m) => /nemovit/i.test(stripTags(m[2])))
+        .map((m) => `${m[1]}  (text: "${stripTags(m[2])}")`)
+    )];
+    log(`  odkazy v menu, jejichž text obsahuje "nemovit": ${navLinks.length}`);
+    if (navLinks.length) log('  ' + navLinks.slice(0, 10).join('\n  '));
+
+    const directHits = [...new Set([...home.text.matchAll(/href=["']([^"']*\/nemovitost[^"']*)["']/gi)].map((m) => m[1]))];
+    log(`  přímé odkazy obsahující "/nemovitost": ${directHits.length}`);
+    if (directHits.length) log('  ' + directHits.slice(0, 5).join('\n  '));
+  }
+
+  // Detail, o kterém víme z dřívějšího vyhledávání, že existoval — ověří, jestli /nemovitost/ URL vzor ještě platí.
+  const known = await getSafe(`${SITE}/nemovitost/prodej-vily-236-m%C2%B2-kurdejov/`);
+  log(`\nznámá detailní URL (z dřívějšího vyhledávání): HTTP ${known.status}, ${known.text.length} znaků`);
 
   log('\n── Konec diagnostiky ──\n');
 }
