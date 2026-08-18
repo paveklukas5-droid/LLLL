@@ -246,6 +246,54 @@ function build(items, source) {
   return L.join('\n');
 }
 
+/* ------------------------------------------- HTML varianta pro crawler KB */
+
+const esc = (s = '') => String(s)
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+/** Z markdownu udělá jednoduché sémantické HTML — Voiceflow crawler čte HTML spolehlivěji než text/plain. */
+function toHtml(md) {
+  const out = [];
+  let inList = false;
+  const inline = (t) => esc(t)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1">$1</a>');
+
+  for (const raw of md.split('\n')) {
+    const line = raw.trimEnd();
+    const closeList = () => { if (inList) { out.push('</ul>'); inList = false; } };
+
+    if (/^### /.test(line)) { closeList(); out.push(`<h3>${inline(line.slice(4))}</h3>`); }
+    else if (/^## /.test(line)) { closeList(); out.push(`<h2>${inline(line.slice(3))}</h2>`); }
+    else if (/^# /.test(line)) { closeList(); out.push(`<h1>${inline(line.slice(2))}</h1>`); }
+    else if (/^---\s*$/.test(line)) { closeList(); out.push('<hr>'); }
+    else if (/^- /.test(line)) { if (!inList) { out.push('<ul>'); inList = true; } out.push(`<li>${inline(line.slice(2))}</li>`); }
+    else if (/^\s+\S/.test(line) && inList) { out[out.length - 1] = out[out.length - 1].replace(/<\/li>$/, ` — ${inline(line.trim())}</li>`); }
+    else if (line === '') closeList();
+    else { closeList(); out.push(`<p>${inline(line)}</p>`); }
+  }
+  if (inList) out.push('</ul>');
+
+  return `<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aktuální nabídka nemovitostí — Realitní tým Zdeňka Štourače</title>
+<style>
+  body{max-width:52rem;margin:2rem auto;padding:0 1.25rem;
+       font:16px/1.65 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:#0f172a}
+  h1{font-size:1.6rem} h2{font-size:1.2rem;margin-top:2rem} h3{font-size:1rem;color:#475569}
+  li{margin:.4rem 0} a{color:#1d4ed8;word-break:break-all} hr{border:0;border-top:1px solid #e2e8f0;margin:2rem 0}
+</style>
+</head>
+<body>
+${out.join('\n')}
+</body>
+</html>
+`;
+}
+
 /* ------------------------------------------------------------------- main */
 
 const ADAPTERS = [
@@ -276,8 +324,12 @@ const ADAPTERS = [
       const { writeFile, mkdir } = await import('node:fs/promises');
       const { dirname } = await import('node:path');
       await mkdir(dirname(OUT), { recursive: true });
-      await writeFile(OUT, build(items, source), 'utf8');
+      const md = build(items, source);
+      await writeFile(OUT, md, 'utf8');
+      const htmlPath = OUT.replace(/\.md$/, '.html');
+      await writeFile(htmlPath, toHtml(md), 'utf8');
       log(`\n✔ zapsáno do ${OUT}`);
+      log(`✔ zapsáno do ${htmlPath}`);
       return;
     } catch (e) {
       log(`  ✘ ${e.message}`);

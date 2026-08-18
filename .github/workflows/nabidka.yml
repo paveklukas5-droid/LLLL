@@ -11,6 +11,12 @@ permissions:
 jobs:
   generate:
     runs-on: ubuntu-latest
+
+    # Job-level env — jedině odsud je secret vidět v podmínce `if` u kroku
+    env:
+      SITE_URL: https://www.zdenekstourac.cz
+      VOICEFLOW_API_KEY: ${{ secrets.VOICEFLOW_API_KEY }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -19,9 +25,11 @@ jobs:
           node-version: '20'
 
       - name: Vygenerovat přehled nabídky
-        env:
-          SITE_URL: https://www.zdenekstourac.cz
         run: node tools/generate-nabidka.mjs
+
+      - name: Nahrát do Voiceflow (jen když je nastavený secret VOICEFLOW_API_KEY)
+        if: env.VOICEFLOW_API_KEY != ''
+        run: node tools/voiceflow-sync.mjs
 
       - name: Commitnout, pokud se nabídka změnila
         run: |
