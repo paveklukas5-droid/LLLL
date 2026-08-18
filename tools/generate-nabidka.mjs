@@ -20,9 +20,26 @@ const log = (...a) => console.log(...a);
 
 async function get(url, asJson = false) {
   const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: asJson ? 'application/json' : 'text/html,application/xml' } });
-  if (!res.ok) throw new Error(`HTTP ${res.status} — ${url}`);
+  if (!res.ok) {
+    const snippet = (await res.text().catch(() => '')).replace(/\s+/g, ' ').trim().slice(0, 160);
+    throw new Error(`HTTP ${res.status} — ${url}${snippet ? ` — „${snippet}…"` : ''}`);
+  }
   return asJson ? res.json() : res.text();
 }
+
+/** Nikdy nehodí výjimku — pro diagnostiku, kde chceme vidět i neúspěch. */
+async function getSafe(url) {
+  try {
+    const res = await fetch(url, { headers: { 'User-Agent': UA } });
+    const text = await res.text().catch(() => '');
+    return { ok: res.ok, status: res.status, text };
+  } catch (e) {
+    return { ok: false, status: 0, text: '', networkError: e.message };
+  }
+}
+
+const looksBlocked = (t = '') =>
+  /just a moment|cf-browser-verification|attention required|access denied|captcha|ddos-guard/i.test(t);
 
 const stripTags = (s = '') => s
   .replace(/<script[\s\S]*?<\/script>/gi, ' ')
@@ -129,11 +146,22 @@ async function fromWpRest() {
 
 /* ------------------------------------------- zdroj 2: sitemap + detaily HTML */
 
+/** Sitemapy si web nejčastěji sám deklaruje v robots.txt — spolehlivější než hádat název souboru. */
+async function sitemapsFromRobots() {
+  try {
+    const robots = await get(`${SITE}/robots.txt`);
+    return [...robots.matchAll(/^sitemap:\s*(\S+)/gim)].map((m) => m[1]);
+  } catch { return []; }
+}
+
 async function fromSitemap() {
-  const candidates = [`${SITE}/wp-sitemap.xml`, `${SITE}/sitemap_index.xml`, `${SITE}/sitemap.xml`];
+  const candidates = [
+    ...(await sitemapsFromRobots()),
+    `${SITE}/wp-sitemap.xml`, `${SITE}/sitemap_index.xml`, `${SITE}/sitemap.xml`,
+  ];
   let urls = [];
 
-  for (const sm of candidates) {
+  for (const sm of [...new Set(candidates)]) {
     let xml;
     try { xml = await get(sm); } catch { continue; }
     const locs = [...xml.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/gi)].map((m) => m[1]);
@@ -153,6 +181,49 @@ async function fromSitemap() {
   urls = [...new Set(urls)].filter((u) => /\/nemovitost\//i.test(u));
   if (!urls.length) throw new Error('V sitemap jsem nenašel žádné URL s /nemovitost/');
 
+  const items = await fetchDetailPages(urls);
+  return { source: 'sitemap.xml + detailní stránky', items };
+}
+
+/* --------------------------------------- zdroj 3: procházení výpisové stránky */
+
+/** Nezávisí na CMS ani na sitemapě — prochází lidskou výpisovou stránku tak, jak by to dělal návštěvník. */
+async function fromListingPage() {
+  const startPaths = ['/nemovitosti/', '/nemovitosti', '/nabidka-nemovitosti/'];
+  let html, base;
+  for (const p of startPaths) {
+    try { html = await get(`${SITE}${p}`); base = p; break; } catch { /* zkus další */ }
+  }
+  if (!html) throw new Error('Výpisová stránka /nemovitosti/ není dostupná');
+
+  const hrefsOf = (h) => [...h.matchAll(/href=["']([^"']+)["']/gi)].map((m) => m[1]);
+  const toAbs = (u) => (u.startsWith('http') ? u : `${SITE}${u.startsWith('/') ? '' : '/'}${u}`);
+
+  const detailFrom = (h) => [...new Set(
+    hrefsOf(h).filter((u) => /\/nemovitost\//i.test(u)).map(toAbs)
+  )];
+
+  let urls = detailFrom(html);
+
+  // Jednoduchá paginace: číslované odkazy nebo /page/2/, /strana-2/ apod. na první stránce.
+  const pageLinks = [...new Set(
+    hrefsOf(html)
+      .filter((u) => new RegExp(`${base.replace(/\/$/, '')}.*(page|strana)[-/]?\\d`, 'i').test(u))
+      .map(toAbs)
+  )];
+  for (const pu of pageLinks.slice(0, 15)) {
+    try { urls.push(...detailFrom(await get(pu))); } catch { /* přeskoč */ }
+  }
+
+  urls = [...new Set(urls)];
+  if (!urls.length) throw new Error('Na výpisové stránce jsem nenašel žádné odkazy na /nemovitost/');
+
+  const items = await fetchDetailPages(urls);
+  return { source: 'procházení výpisové stránky /nemovitosti/', items };
+}
+
+/** Společné pro sitemap i listing-page adaptér: stáhne a naparsuje jednotlivé detaily nemovitostí. */
+async function fetchDetailPages(urls) {
   const items = [];
   for (const u of urls.slice(0, 300)) {
     try {
@@ -163,7 +234,7 @@ async function fromSitemap() {
       items.push({ ...parseItem(title, stripTags(html).slice(0, 2500)), url: u });
     } catch { /* přeskoč nedostupné */ }
   }
-  return { source: 'sitemap.xml + detailní stránky', items };
+  return items;
 }
 
 /* --------------------------------------------------- sestavení dokumentu */
@@ -300,10 +371,39 @@ ${out.join('\n')}
 const ADAPTERS = [
   ['WP REST API', fromWpRest],
   ['sitemap.xml', fromSitemap],
+  ['procházení /nemovitosti/', fromListingPage],
 ];
+
+/** Jen v --probe: ať je v logu vidět PROČ zdroje nefungují, ne jen ŽE nefungují. */
+async function diagnostika() {
+  log('── Diagnostika ──\n');
+
+  const robots = await getSafe(`${SITE}/robots.txt`);
+  log(`robots.txt: HTTP ${robots.status}${robots.networkError ? ` (${robots.networkError})` : ''}`);
+  if (robots.ok) {
+    const sitemapLines = robots.text.split('\n').filter((l) => /^sitemap:/i.test(l));
+    log(sitemapLines.length ? `  Sitemap: řádky:\n  ${sitemapLines.join('\n  ')}` : '  (žádný Sitemap: řádek)');
+  }
+
+  const listing = await getSafe(`${SITE}/nemovitosti/`);
+  log(`\n/nemovitosti/: HTTP ${listing.status}${listing.networkError ? ` (${listing.networkError})` : ''}, ${listing.text.length} znaků`);
+  if (listing.ok && looksBlocked(listing.text)) log('  ⚠ obsah vypadá jako stránka ochrany proti botům (Cloudflare/CAPTCHA apod.)');
+  if (listing.ok) {
+    const links = [...new Set([...listing.text.matchAll(/href=["']([^"']*\/nemovitost\/[^"']*)["']/gi)].map((m) => m[1]))];
+    log(`  odkazů na /nemovitost/ na stránce: ${links.length}`);
+    if (links.length) log('  ukázka: ' + links.slice(0, 3).join(', '));
+  }
+
+  const wpTypes = await getSafe(`${SITE}/wp-json/wp/v2/types`);
+  log(`\n/wp-json/wp/v2/types: HTTP ${wpTypes.status}${wpTypes.networkError ? ` (${wpTypes.networkError})` : ''}`);
+  if (wpTypes.ok) log('  ' + wpTypes.text.slice(0, 300));
+
+  log('\n── Konec diagnostiky ──\n');
+}
 
 (async () => {
   log(`Web: ${SITE}\n`);
+  if (probe) await diagnostika();
   const errors = [];
 
   for (const [name, fn] of ADAPTERS) {
