@@ -1,6 +1,20 @@
 name: Přehled nabídky pro knowledge base
 
+# POZOR: `schedule` a `workflow_dispatch` fungují jen tehdy, když je tenhle
+# soubor na VÝCHOZÍ větvi repozitáře — GitHub si odtud registruje, jaké
+# workflows vůbec existují. Dokud je jen na této feature větvi, cron
+# i tlačítko "Run workflow" jsou pro GitHub neviditelné (ověřeno: totalCount
+# workflows = 0). Proto je tu navíc `push` na tuhle větev, omezený jen na
+# soubory generátoru — díky tomu se dá běh reálně vyzkoušet i před sloučením.
+# Až bude tahle větev výchozí (nebo do ní sloučená), `push` blok už nebude
+# potřeba a klidně ho smažte — schedule a workflow_dispatch pak budou fungovat sami.
 on:
+  push:
+    branches: [claude/realitni-kancelar-chatbot-dintiz]
+    paths:
+      - 'tools/generate-nabidka.mjs'
+      - 'tools/voiceflow-sync.mjs'
+      - '.github/workflows/nabidka.yml'
   schedule:
     - cron: '20 3 * * *'   # každý den 3:20 UTC = 5:20 SELČ / 4:20 SEČ
   workflow_dispatch:        # ruční spuštění tlačítkem v záložce Actions
@@ -23,6 +37,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+
+      - name: Diagnostika zdroje dat (--probe, jen do logu)
+        continue-on-error: true
+        run: node tools/generate-nabidka.mjs --probe
 
       - name: Vygenerovat přehled nabídky
         run: node tools/generate-nabidka.mjs
