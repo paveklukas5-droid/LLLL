@@ -10,7 +10,8 @@
 
 const SITE = process.env.SITE_URL || 'https://www.zdenekstourac.cz';
 const OUT = process.env.OUT_FILE || 'chatbot-realitni-kancelar/kb/nabidka-prehled.md';
-const UA = 'ZdenekStouracKBBot/1.0 (+generátor přehledu nabídky pro chatbota)';
+// Header hodnoty musí být čisté ASCII (ByteString) — diakritika tu shodí fetch().
+const UA = 'ZdenekStouracKBBot/1.0 (KB sync generator; contact: reality@zdenekstourac.cz)';
 
 const probe = process.argv.includes('--probe');
 const log = (...a) => console.log(...a);
