@@ -61,6 +61,22 @@ V logu je `hook.eu1.make.com`. Ujisti se, že je to ten samý webhook, na které
 
 ---
 
+## 1b. Datová struktura webhooku v Make
+
+**Druhá, nezávislá příčina prázdných e-mailů** — a hůř dohledatelná, protože scénář hlásí úspěch.
+
+Custom webhook v Make může mít připojenou *datovou strukturu*. Pokud ji má, Make příchozí JSON proti ní validuje a **všechno, co v ní není definované, zahodí**. Do modulů pak doteče prázdno, mapování `2.message.toolCalls[1].function.arguments.jmeno_prijmeni` vrátí nic, e-mail odejde prázdný a v historii svítí zelený běh.
+
+Přesně to se stalo tady: struktura webhooku měla v `arguments` pole z úplně jiného projektu — `jmeno`, `email`, `typ_zajmu`, `ucel_vyuziti`, `lokalita`, `casovy_ramec`. Ani jedno z 22 lomaxích polí tam nebylo, takže se všechna zahazovala bez ohledu na to, co VAPI poslal.
+
+**Jak to zkontrolovat:** otevři modul Custom webhook → klikni na webhook → *Data structure*. Pod `message → toolCalls → function → arguments` musí být tvoje pole.
+
+**Jak to opravit:** buď strukturu přepiš na správná pole, nebo ji odpoj úplně (pak Make pustí dál syrový JSON a mapování se píše ručně, což u hardcodovaných cest nevadí).
+
+> **Proč to vzniká:** struktura se učí z prvního payloadu, nebo se zkopíruje spolu se scénářem z jiného projektu. Když se pak změní schéma nástroje, struktura se sama neaktualizuje. **Po každé změně parametrů nástroje ve VAPI tuhle strukturu překontroluj.**
+
+---
+
 ## 2. Make musí validovat a hlídat duplicity
 
 Webhook vrátil `"Servisní poptávka SRV-20260817-EDB7B8 byla úspěšně zaevidována"` na **prázdný payload**. Ta hláška byla natvrdo napsaná a nekontrolovala nic — bot pak s klidem oznámil hotovo.
