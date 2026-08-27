@@ -26,9 +26,9 @@ cat > /tmp/lomax_tool.json <<EOF
     "headers": { "x-api-key": "${MAKE_SECRET}" }
   },
   "messages": [
-    { "type": "request-start", "content": "Zakládám vám servisní poptávku, moment prosím.", "blocking": false },
-    { "type": "request-complete", "content": "Hotovo, poptávku mám odeslanou." },
-    { "type": "request-failed", "content": "Omlouvám se, systém mi teď poptávku nepřijal. Zkusím to ještě jednou." },
+    { "type": "request-start", "content": "Zakládám vám reklamaci, moment prosím.", "blocking": false },
+    { "type": "request-complete", "content": "Hotovo, reklamaci mám odeslanou." },
+    { "type": "request-failed", "content": "Omlouvám se, systém mi teď reklamaci nepřijal. Zkusím to ještě jednou." },
     { "type": "request-response-delayed", "content": "Ještě to zpracovávám, děkuji za trpělivost.", "timingMilliseconds": 8000 }
   ],
   "function": {

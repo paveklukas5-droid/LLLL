@@ -101,9 +101,9 @@ Tohle lidi často vynechají a bot pak 4 sekundy mlčí, což na telefonu působ
 
 | Typ | Text |
 |---|---|
-| `Request Start` | `Zakládám vám servisní poptávku, moment prosím.` |
-| `Request Complete` | `Hotovo, poptávku mám odeslanou.` |
-| `Request Failed` | `Omlouvám se, systém mi teď poptávku nepřijal. Zkusím to ještě jednou.` |
+| `Request Start` | `Zakládám vám reklamaci, moment prosím.` |
+| `Request Complete` | `Hotovo, reklamaci mám odeslanou.` |
+| `Request Failed` | `Omlouvám se, systém mi teď reklamaci nepřijal. Zkusím to ještě jednou.` |
 | `Request Delayed` (8000 ms) | `Ještě to zpracovávám, děkuji za trpělivost.` |
 
 ### Parametry — 22× „Add Property"

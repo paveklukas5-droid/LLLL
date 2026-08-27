@@ -107,7 +107,7 @@ Obsah větve: jediný modul **Webhook response**, status `200`, body:
 {"results":[{"toolCallId":"{{message.toolCalls[0].id}}","error":"Poptávku nelze uložit, v požadavku chybí povinné údaje (jméno, město nebo popis závady). Zopakuj volání nástroje a vyplň všechna povinná pole."}]}
 ```
 
-> **Klíč je slovo `error` místo `result`.** Na `error` VAPI zareaguje jako na selhání nástroje — bot řekne hlášku *„Omlouvám se, systém mi teď poptávku nepřijal"* a zkusí to znovu **s vyplněnými daty**. Kdyby tam bylo `result` s hezkou větou, bot s klidem oznámí, že je hotovo, i když se odeslala prázdná obálka. Přesně to se stalo 17. 8.: webhook natvrdo vrátil „byla úspěšně zaevidována" na prázdný payload.
+> **Klíč je slovo `error` místo `result`.** Na `error` VAPI zareaguje jako na selhání nástroje — bot řekne hlášku *„Omlouvám se, systém mi teď reklamaci nepřijal"* a zkusí to znovu **s vyplněnými daty**. Kdyby tam bylo `result` s hezkou větou, bot s klidem oznámí, že je hotovo, i když se odeslala prázdná obálka. Přesně to se stalo 17. 8.: webhook natvrdo vrátil „byla úspěšně zaevidována" na prázdný payload.
 
 **Větev C — „OK, zpracovat"**
 Filtr: `je_duplicita` = `false` **AND** `data_ok` = `true`

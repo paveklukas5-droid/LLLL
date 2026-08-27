@@ -14,16 +14,16 @@
       "messages": [
         {
           "type": "request-start",
-          "content": "Zakládám vám servisní poptávku, moment prosím.",
+          "content": "Zakládám vám reklamaci, moment prosím.",
           "blocking": false
         },
         {
           "type": "request-complete",
-          "content": "Hotovo, poptávku mám odeslanou."
+          "content": "Hotovo, reklamaci mám odeslanou."
         },
         {
           "type": "request-failed",
-          "content": "Omlouvám se, systém mi teď poptávku nepřijal. Zkusím to ještě jednou."
+          "content": "Omlouvám se, systém mi teď reklamaci nepřijal. Zkusím to ještě jednou."
         },
         {
           "type": "request-response-delayed",

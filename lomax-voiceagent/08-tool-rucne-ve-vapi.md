@@ -46,9 +46,9 @@ Sekce **Messages** → **Add Message**. Přidej všechny čtyři. Bez nich bot b
 
 | Type | Content |
 |---|---|
-| `Request Start` | `Zakládám vám servisní poptávku, moment prosím.` |
-| `Request Complete` | `Hotovo, poptávku mám odeslanou.` |
-| `Request Failed` | `Omlouvám se, systém mi teď poptávku nepřijal. Zkusím to ještě jednou.` |
+| `Request Start` | `Zakládám vám reklamaci, moment prosím.` |
+| `Request Complete` | `Hotovo, reklamaci mám odeslanou.` |
+| `Request Failed` | `Omlouvám se, systém mi teď reklamaci nepřijal. Zkusím to ještě jednou.` |
 | `Request Response Delayed` (timing `8000` ms) | `Ještě to zpracovávám, děkuji za trpělivost.` |
 
 ---
@@ -220,7 +220,7 @@ Bez publikování se změny na živé číslo nepropíšou.
 
 V dashboardu klikni **Talk to Assistant** a odehraj krátký hovor: jméno, adresa s PSČ, popis závady.
 
-- Bot má na konci říct *„Zakládám vám servisní poptávku, moment prosím."* → to znamená, že nástroj **skutečně zavolal**
+- Bot má na konci říct *„Zakládám vám reklamaci, moment prosím."* → to znamená, že nástroj **skutečně zavolal**
 - V Make se má scénář spustit a v historii mít zelený běh
 - V logu hovoru ve VAPI (**Calls → detail hovoru**) najdeš sekci s tool callem a přesným JSON, který odešel — tam nejrychleji uvidíš, jestli něco chybí
 
