@@ -1,4 +1,6 @@
 // Parametry nastroje odeslat_servisni_poptavku pro LOMAX voicebota.
+// Poradi: 10 povinnych poli je UMYSLNE prvnich - kdyby VAPI kdy oriznul
+// odpoved kvuli maxTokens, prijdou o nic dulezite pouze nepovinna pole.
 // Pokud ti VAPI u nastroje nabidne JSON / raw editor parametru, vloz tam cely tento objekt.
 // Radky zacinajici // pred vlozenim smaz - JSON komentare nepodporuje.
 {
@@ -7,10 +9,6 @@
     "jmeno_prijmeni": {
       "type": "string",
       "description": "Celé jméno a příjmení volajícího, tak jak ho nadiktoval. Např. 'Jan Novák'."
-    },
-    "telefon_jine": {
-      "type": "string",
-      "description": "Alternativní telefonní číslo pro zpětné volání. Vyplň POUZE tehdy, když zákazník řekne, že se mu má technik ozvat na JINÉ číslo, než ze kterého právě volá. Jinak prázdný řetězec - číslo volajícího se doplní automaticky z hovoru. Když ho zákazník nadiktuje, přečti mu ho zpět."
     },
     "adresa_ulice_cp": {
       "type": "string",
@@ -52,6 +50,31 @@
       ],
       "description": "Kategorie produktu, kterého se závada týká."
     },
+    "popis_zavady": {
+      "type": "string",
+      "description": "Konkrétní popis závady vlastními slovy zákazníka. Ne 'nefunguje to', ale např. 'vrata se zastaví asi 20 cm nad zemí a vyjedou zpět nahoru, bliká jedna fotobuňka'."
+    },
+    "priorita": {
+      "type": "string",
+      "enum": [
+        "vysoka",
+        "stredni",
+        "nizka"
+      ],
+      "description": "vysoka = bezpečnostní riziko nebo objekt nelze zabezpečit (vrata nejdou zavřít); stredni = produkt nefunkční, ale zabezpečený; nizka = kosmetická vada, hluk, drobnost."
+    },
+    "bezpecnostni_riziko": {
+      "type": "boolean",
+      "description": "true při prasklé pružině, utrženém lanku, uvolněné či visící lamele, křivém nebo vypadlém křídle, samovolném sjíždění vrat, jiskření nebo zápachu spáleniny."
+    },
+    "shrnuti_pro_technika": {
+      "type": "string",
+      "description": "1-2 věty pro technika: co se stalo a co si nejspíš bude potřebovat vzít s sebou."
+    },
+    "telefon_jine": {
+      "type": "string",
+      "description": "Alternativní telefonní číslo pro zpětné volání. Vyplň POUZE tehdy, když zákazník řekne, že se mu má technik ozvat na JINÉ číslo, než ze kterého právě volá. Jinak prázdný řetězec - číslo volajícího se doplní automaticky z hovoru. Když ho zákazník nadiktuje, přečti mu ho zpět."
+    },
     "model_rada": {
       "type": "string",
       "description": "Modelová řada, pokud ji zákazník zná. Např. 'Home', 'Delta', 'Excellent', 'Praktik', 'LT 50', 'Z-90', 'C-80', 'FABO'. Jinak prázdný řetězec."
@@ -59,10 +82,6 @@
     "pohon_znacka": {
       "type": "string",
       "description": "Značka pohonu, pokud je známa: Marantec, Somfy, Selve, Elero, jiná, nebo 'bez pohonu'. Jinak prázdný řetězec."
-    },
-    "popis_zavady": {
-      "type": "string",
-      "description": "Konkrétní popis závady vlastními slovy zákazníka. Ne 'nefunguje to', ale např. 'vrata se zastaví asi 20 cm nad zemí a vyjedou zpět nahoru, bliká jedna fotobuňka'."
     },
     "technicke_detaily": {
       "type": "string",
@@ -75,19 +94,6 @@
     "opakovana_zavada": {
       "type": "boolean",
       "description": "true, pokud zákazník uvedl, že se stejný problém už dříve řešil."
-    },
-    "bezpecnostni_riziko": {
-      "type": "boolean",
-      "description": "true při prasklé pružině, utrženém lanku, uvolněné či visící lamele, křivém nebo vypadlém křídle, samovolném sjíždění vrat, jiskření nebo zápachu spáleniny."
-    },
-    "priorita": {
-      "type": "string",
-      "enum": [
-        "vysoka",
-        "stredni",
-        "nizka"
-      ],
-      "description": "vysoka = bezpečnostní riziko nebo objekt nelze zabezpečit (vrata nejdou zavřít); stredni = produkt nefunkční, ale zabezpečený; nizka = kosmetická vada, hluk, drobnost."
     },
     "rok_montaze": {
       "type": "string",
@@ -108,10 +114,6 @@
     "ma_fotografie": {
       "type": "boolean",
       "description": "true, pokud zákazník uvedl, že fotografii závady má nebo ji pořídí a pošle."
-    },
-    "shrnuti_pro_technika": {
-      "type": "string",
-      "description": "1-2 věty pro technika: co se stalo a co si nejspíš bude potřebovat vzít s sebou."
     },
     "poznamka": {
       "type": "string",

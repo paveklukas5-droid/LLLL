@@ -38,7 +38,7 @@ Create Assistant → Blank. Nastav podle `03-vapi-assistant-config.json`:
 - System prompt = celý `01-system-prompt.md`
 - Transcriber: Deepgram `nova-3`, jazyk **cs**, `smartFormat` i `numerals` **vypnuté**
 - Voice: Azure `cs-CZ-VlastaNeural` (jistota) nebo ElevenLabs `eleven_flash_v2_5` (přirozenější)
-- Model: Claude Haiku 4.5, temperature `0.3`
+- Model: Claude Haiku 4.5, temperature `0.3`, **Max Tokens `1500`** (výchozích 100/350 useká JSON u 22 polí a pošle prázdné `arguments`)
 - First message: `Dobrý den, tady Klára ze servisu LOMAX. Jak vám můžu pomoci?`
 - Připoj oba nástroje
 
@@ -82,7 +82,7 @@ Bot sbírá osobní údaje, takže:
 |---|---|
 | Bot komolí telefonní čísla a PSČ | Vypni `smartFormat` i `numerals` a použij `nova-3`; zvyš `onNumberSeconds` na `0.8`. Zapnuté formátování je nejčastější příčina — udělá z diktovaných číslic „hezké" číslo. |
 | Bot skáče zákazníkovi do řeči | Zvyš `startSpeakingPlan.waitSeconds` na `0.7`, `onNoPunctuationSeconds` na `1.8` |
-| Bot mluví moc dlouho | Sniž `maxTokens` na 250, v promptu zvýrazni pravidlo „maximálně 2 věty" |
+| Bot mluví moc dlouho | **Neřeš to přes `maxTokens`** — nižší strop useká JSON tool callu a vrátí se prázdné `arguments` (viz řádek níž). Řeš to v promptu: zvýrazni pravidlo „maximálně 2 věty" a strop 10 s na promluvu v sekci 2. |
 | Zákazník se nedokáže domluvit na čísle zakázky | Prompt má strop na dva pokusy a pak pole nechá prázdné — pokud bot tlačí dál, zvýrazni sekci „STROP NA OPAKOVÁNÍ" v KROKU 4 |
 | Dispečerovi chodí mail jako zdroják HTML | V modulu Email nemáš ručně přidávat hlavičku `Content-Type` — nastav ji přepínačem *Content type: HTML* |
 | Nezavolá nástroj | Zkontroluj, že je nástroj připojený k asistentovi; sniž temperature na `0.2`; přidej do KROKU 6 promptu důraznější formulaci |
@@ -91,6 +91,7 @@ Bot sbírá osobní údaje, takže:
 | E-mail přišel, ale vyplněný je jen telefon | Na webhook dorazil `end-of-call-report` místo tool-callu — chybí filtr `message.type = "tool-calls"` hned za webhookem. Zkontroluj i to, jestli Server URL asistenta nemíří na stejný webhook jako nástroj. |
 | Mail přišel, ale v historii Make nic není | Koukáš do jiného scénáře, nebo má historie zúžený filtr období. Rozšiř na 24 h a projdi i *Incomplete executions*. |
 | Bot za celý hovor nezavolal nástroj | V *Calls → detail hovoru* zkontroluj, jestli tam je záznam o `odeslat_servisni_poptavku`. Když ne, zvyš důraz v KROKU 6 promptu, sniž temperature na `0.2`, případně přepni model na Claude Sonnet 5. |
+| **VAPI posílá `arguments: {}` nebo useknutá pole (typicky chybí `poznamka`, `dostupnost`)** | **Max Tokens u asistenta je moc nízký.** Výchozí hodnota VAPI je jen 100 — nástroj má 22 polí a model musí celý JSON vygenerovat najednou; když dojde strop, JSON se nedá naparsovat a přijde prázdno. Zvyš na `1500` (Assistant → Model → Max Tokens). Zdroj: [VAPI troubleshooting](https://docs.vapi.ai/tools/custom-tools-troubleshooting) — *„The default token limit is only 100. Increase it for complex tools."* Detailní rozbor v `11-oprava-prazdne-argumenty.md`, sekce 0. |
 | **E-mail dorazí, ale všechna pole jsou prázdná** | **Nejčastější a nejzákeřnější.** Webhook v Make má připojenou *datovou strukturu*, která neodpovídá tomu, co VAPI posílá. Make příchozí JSON validuje proti ní a **všechno mimo strukturu potichu zahodí** — scénář doběhne se stavem SUCCESS a odešle prázdný mail. Otevři webhook → tlačítko u *Data structure* → zkontroluj, že pod `message → toolCalls → function → arguments` jsou tvoje pole. Když tam jsou cizí (třeba z jiného projektu), strukturu přepiš nebo ji úplně odpoj. |
 | V logu hovoru je `"arguments": {}` | Nástroj má prázdný objekt `parameters` — schéma se ve VAPI neuložilo. Postup i ověřovací příkaz jsou v `11-oprava-prazdne-argumenty.md`. |
 | Jeden hovor založil dvě zakázky | Chybí dedup podle `callId` v Make a strop „nástroj jen jednou za hovor" v promptu. |

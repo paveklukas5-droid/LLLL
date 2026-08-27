@@ -11,7 +11,8 @@
     "model": "claude-haiku-4-5",
     "_poznamka_model": "claude-haiku-4-5 dává na tomhle promptu TTFT kolem 1,0 s při zlomku ceny - pro servisní linku správná volba. Když začne vypadávat z pravidel (slíbí termín, zapomene zavolat nástroj), přepni na claude-sonnet-5 a srovnej si to s cenou za hovor.",
     "temperature": 0.3,
-    "maxTokens": 350,
+    "maxTokens": 1500,
+    "_poznamka_maxtokens": "PŘÍČINA PRÁZDNÝCH ARGUMENTS. VAPI dokumentace: 'The default token limit is only 100. Increase it for complex tools.' Nástroj má 22 polí a čeština se tokenizuje hůř než angličtina - model musí celý JSON s argumenty vygenerovat v jednom tahu, a když maxTokens dojde dřív než JSON dopíše, výstup se nedá naparsovat a VAPI pošle prázdné {} nebo useknutá pole. 1500 je strop, ne cíl - reálná spotřeba na plné volání je ~400-700 tokenů, takže to nic nestojí navíc, jen dává rezervu.",
     "emotionRecognitionEnabled": true,
     "numFastTurns": 1,
     "toolIds": [

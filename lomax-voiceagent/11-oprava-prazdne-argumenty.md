@@ -12,7 +12,34 @@ Z logu hovoru ze 17. 8.:
 
 Model neměl kam data zapsat, protože nástroj ve VAPI má **prázdný nebo chybějící objekt `parameters`**. Sedmiminutový hovor, ve kterém bot posbíral všechno správně, skončil prázdným e-mailem. Zákazník to vyjmenoval přesně: *„není tam ani moje jméno, není tam priorita, telefon špatně, nemáte tam ani zapsanou adresu, ani produkt, ani rok montáže… ani shrnutí pro technika, popis závady tam vůbec není."*
 
-Pořadí oprav je podle dopadu. **Bod 1 udělej dřív než cokoli jiného** — bez něj je každý hovor k ničemu, ať je jakkoli dobrý.
+Pořadí oprav je podle dopadu.
+
+**27. 8. update:** body 1 (schéma) a 1b (Make struktura) jsou ověřené a opravené, ale prázdné/useknuté `arguments` z VAPI pořád chodily. Skutečná, dokumentovaná příčina je **bod 0** níž — přečti si ho jako první, dřív než cokoli dalšího.
+
+---
+
+## 0. Max Tokens ořezává JSON (nejpravděpodobnější, aktuální příčina)
+
+Tohle přiznává i sama dokumentace VAPI:
+
+> „The default token limit is only 100. Increase it for complex tools."
+> — [docs.vapi.ai/tools/custom-tools-troubleshooting](https://docs.vapi.ai/tools/custom-tools-troubleshooting)
+
+Nástroj `odeslat_servisni_poptavku` má **22 polí**, z toho čtyři delší volný text (`popis_zavady`, `technicke_detaily`, `shrnuti_pro_technika`, `poznamka`) v češtině — a čeština se kvůli diakritice a delším tvarům slov tokenizuje hůř než angličtina. Model musí v jednom tahu vygenerovat celý JSON s argumenty. **Když dojde `maxTokens` dřív, než JSON dopíše, výstup se nedá naparsovat jako platný JSON a VAPI pošle prázdné `{}`** — nebo, u některých volání, jen fragment polí, podle toho, kde přesně došel prostor. `maxTokens` na asistentovi byl nastavený na `350`, což je líp než výchozích 100, ale u 22 polí pořád málo pro delší hovory.
+
+**Tohle přesně sedí na to, co se dělo dřív:** *„kdyz tam bylo shrnuti tak to neposilalo"* — `shrnuti_pro_technika` bylo v původním pořadí polí jedno z posledních, které se generuje. Když model dojde na hranici tokenů těsně před ním nebo v něm, JSON se nikdy nezavře a celý objekt spadne na `{}`.
+
+### Oprava — tři věci, všechny už jsou v souborech
+
+**A) `maxTokens` na asistentovi: 350 → 1500.** Je to strop, ne cíl — model reálně generuje na plné volání kolem 400–700 tokenů, takže vyšší strop nic nestojí navíc, jen dává rezervu. V `03-vapi-assistant-config.json` je teď `1500` i s tímhle vysvětlením přímo v poznámce.
+
+**B) Pořadí polí ve schématu — 10 povinných teď jde první.** Přeskládal jsem `properties` v `02-vapi-tools.json`, `07-vytvorit-tool.sh` a `09-parametry.json` tak, že všech deset povinných polí (`jmeno_prijmeni` … `shrnuti_pro_technika`) je na začátku a dvanáct nepovinných až za nimi. I kdyby k oříznutí ještě někdy došlo, přijdeš jen o nepovinná pole na konci (`ma_fotografie`, `poznamka`…), nikdy o jméno, adresu nebo shrnutí pro technika.
+
+**C) `strict: true` na nástroji (volitelné, diagnostické).** Přidáno do `02-vapi-tools.json` a `07-vytvorit-tool.sh`. Podle VAPI dokumentace to vadné schéma/výstup ohlásí jako viditelnou chybu v logu volání místo tichého `{}`. **Pokud by ti to po zapnutí začalo hlásit chybu i na zdravých hovorech, vypni to zpátky** — je to nástroj na odhalení poruchy, ne trvalá povinnost.
+
+### Jak to ověřit
+
+VAPI → **Calls → detail hovoru → Logs** (ne jen Transcript). U toho tool callu hledej text **„Schema validation error"**, **„token"** nebo **„truncat"**. S `strict: true` zapnutým se tam přesný důvod objeví viditelně, místo aby zmizel jako tichých `{}`.
 
 ---
 
@@ -147,7 +174,8 @@ Z minulých kol reálně funguje:
 
 | | Krok |
 |---|---|
-| ☐ | Nahrát schéma parametrů a **ověřit přes API, že vrací 22** |
+| ☐ | Zvýšit `maxTokens` na asistentovi na **1500** (KROK 0 — udělej první) |
+| ☐ | Nahrát schéma parametrů (nové pořadí polí) a **ověřit přes API, že vrací 22** |
 | ☐ | Zkontrolovat, že `serverUrl` nástroje míří na správný Make webhook (eu1 vs eu2) |
 | ☐ | V Make přidat Data store + validační větve podle `04-make-scenar.md` |
 | ☐ | Nahrát aktuální `01-system-prompt.md` (ženský rod, značky, strop promluvy, ruční pohyb vrat) |

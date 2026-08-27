@@ -63,6 +63,8 @@ curl -X POST https://api.vapi.ai/tool \
 
 Odpověď obsahuje `"id": "..."` — **tohle ID si ulož**, budeš ho potřebovat pro asistenta.
 
+> **Přidej do `tool.json` ještě `"strict": true`** (sourozenec `name`/`description`/`parameters` uvnitř `function`) — v `02-vapi-tools.json` a `07-vytvorit-tool.sh` už je. Vadné schéma pak nástroj ohlásí jako viditelnou chybu v logu volání, místo aby potichu poslal prázdné `{}`. Pokud ti to kdy nahodí chybu i na zdravých hovorech, zase to vypni — je to diagnostika, ne trvalá nutnost.
+
 **4. Stejně založ ukončení hovoru** (nepovinné, jde zapnout i přepínačem v dashboardu):
 
 ```bash
@@ -154,9 +156,11 @@ Dashboard → **Assistants** → **Create Assistant** → *Blank Template*. Náz
 | **First Message** | viz ČÁST 1 |
 | **System Prompt** | **celý obsah `01-system-prompt.md`** — označ vše, zkopíruj, vlož |
 | **Temperature** | `0.3` |
-| **Max Tokens** | `350` |
+| **Max Tokens** | **`1500`**, ne `350` |
 
 > Markdown v promptu nevadí — model ho čte jako strukturu, ale nahlas ho nikdy neříká (je to zakázané v sekci 1, pravidlo 9). Nesnaž se ho odmazávat, ztratíš tím přehlednost.
+>
+> **Proč zrovna 1500, a proč na tom záleží víc než na čemkoli jiném v tomhle nastavení:** nástroj má 22 polí a model musí celý JSON s argumenty vygenerovat najednou. VAPI to přiznává i ve vlastní dokumentaci — *„The default token limit is only 100. Increase it for complex tools."* Když `maxTokens` dojde dřív, než model JSON dopíše, výstup nejde naparsovat a přijde prázdné `{}`, nebo mu chybí pole ke konci (typicky `poznamka`, `dostupnost`). 1500 je jen strop, reálně se spotřebuje 400–700 tokenů, takže to nic nestojí navíc.
 
 ## Záložka Voice
 
@@ -271,3 +275,4 @@ Dashboard → **Phone Numbers** → **Create Phone Number**.
 | Make mapuje kořen payloadu | Prázdné e-maily | Data jsou v `message.toolCalls[0].function.arguments` |
 | Těžké moduly před response | Timeout nástroje | Sheets, CRM a další dej **až za** *Webhook response* |
 | Public key místo Private | `401 Unauthorized` u API | Private Key ze *Settings → API Keys* |
+| **`arguments` chodí `{}` nebo bez posledních polí** | **Max Tokens příliš nízké** (výchozí je jen 100) — model useknutý JSON nejde naparsovat | Zvyš Max Tokens u asistenta na `1500`, viz ČÁST 3. Detailní rozbor v `11-oprava-prazdne-argumenty.md`. |
