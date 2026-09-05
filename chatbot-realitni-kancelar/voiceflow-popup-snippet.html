@@ -1,6 +1,3 @@
-<!-- ============================================================
-     1) PŮVODNÍ VOICEFLOW EMBED — beze změny, nechte přesně takhle.
-     ============================================================ -->
 <script type="text/javascript">
   (function(d, t) {
       var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
@@ -11,154 +8,125 @@
           voice: {
             url: "https://runtime-api.voiceflow.com"
           }
+        }).then(function() {
+
+          var POPUP_TEXT = '👋 Máte dotaz k nemovitosti? Zeptejte se, poradíme hned.';
+          var POPUP_DELAY = 5000;
+          var STORAGE_KEY = 'vfPopupDismissedAt';
+          var HODIN_DO_DALSIHO_ZOBRAZENI = 24;
+
+          var chatOpened = false;
+
+          function bylaNedavnoZavrena() {
+            try {
+              var t2 = localStorage.getItem(STORAGE_KEY);
+              return !!t2 && (Date.now() - Number(t2)) < HODIN_DO_DALSIHO_ZOBRAZENI * 3600 * 1000;
+            } catch (e) { return false; }
+          }
+          function oznacitJakoZavrenou() {
+            try { localStorage.setItem(STORAGE_KEY, String(Date.now())); } catch (e) {}
+          }
+          function removeBubble() {
+            var b = d.getElementById('vf-custom-popup');
+            if (b) b.remove();
+          }
+
+          // ---- Detekce otevření chatu — tři nezávislé cesty najednou ----
+          // 1) oficiální událost, když existuje
+          try {
+            window.voiceflow.chat.on('open', function() {
+              chatOpened = true;
+              removeBubble();
+              oznacitJakoZavrenou();
+            });
+            window.voiceflow.chat.on('close', function() {
+              chatOpened = false;
+            });
+          } catch (e) {}
+
+          // 2) klik kamkoli do widgetu (i na samotnou ikonu launcheru)
+          d.addEventListener('click', function(e) {
+            if (e.target && (e.target.id === 'voiceflow-chat' || e.target.closest('#voiceflow-chat'))) {
+              chatOpened = true;
+              removeBubble();
+              oznacitJakoZavrenou();
+            }
+          }, true);
+
+          // 3) záložní kontrola výšky rámu — pro případ, že .on() ani klik nechytí
+          setInterval(function() {
+            var frame = d.getElementById('voiceflow-chat-frame');
+            var open = frame && frame.offsetHeight > 150;
+            if (open && !chatOpened) {
+              chatOpened = true;
+              removeBubble();
+              oznacitJakoZavrenou();
+            } else if (!open) {
+              chatOpened = false;
+            }
+          }, 700);
+
+          // ---- Pop-up bublina ----
+          if (bylaNedavnoZavrena()) return;
+
+          setTimeout(function() {
+            if (chatOpened) return;
+            var frame = d.getElementById('voiceflow-chat-frame');
+            if (frame && frame.offsetHeight > 150) return;
+
+            var bubble = d.createElement('div');
+            bubble.id = 'vf-custom-popup';
+            bubble.setAttribute('role', 'button');
+            bubble.setAttribute('tabindex', '0');
+            bubble.setAttribute('aria-label', 'Otevřít chat');
+            bubble.innerHTML = POPUP_TEXT +
+              '<span id="vf-close-popup" aria-label="Zavřít" style="position:absolute;top:4px;right:10px;width:20px;height:20px;font-size:18px;color:#94a3b8;font-family:Arial,sans-serif;font-weight:bold;line-height:1;cursor:pointer;">&times;</span>' +
+              '<span style="position:absolute;bottom:-8px;right:24px;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid #16243B;"></span>';
+
+            bubble.style.cssText =
+              'position:fixed;right:24px;bottom:calc(100px + env(safe-area-inset-bottom, 0px));' +
+              'max-width:270px;background:#16243B;color:#ffffff;padding:14px 38px 14px 16px;' +
+              'border-radius:14px 14px 4px 14px;font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;' +
+              'box-shadow:0 8px 24px rgba(0,0,0,.18);cursor:pointer;z-index:999998;' +
+              'opacity:0;transform:translateY(8px);transition:opacity .35s ease, transform .35s ease;';
+
+            if (window.innerWidth <= 480) {
+              bubble.style.left = '12px';
+              bubble.style.right = '12px';
+              bubble.style.maxWidth = 'none';
+              bubble.style.bottom = 'calc(84px + env(safe-area-inset-bottom, 0px))';
+              bubble.style.borderRadius = '14px 14px 14px 4px';
+            }
+
+            d.body.appendChild(bubble);
+
+            setTimeout(function() {
+              if (!chatOpened) {
+                bubble.style.opacity = '1';
+                bubble.style.transform = 'translateY(0)';
+              }
+            }, 20);
+
+            var closeBtn = bubble.querySelector('#vf-close-popup');
+            closeBtn.onmouseover = function() { this.style.color = '#ffffff'; };
+            closeBtn.onmouseout = function() { this.style.color = '#94a3b8'; };
+            closeBtn.onclick = function(e) {
+              e.stopPropagation();
+              removeBubble();
+              oznacitJakoZavrenou();
+            };
+            bubble.onclick = function() {
+              window.voiceflow.chat.open();
+              removeBubble();
+              oznacitJakoZavrenou();
+            };
+            bubble.onkeydown = function(e) {
+              if (e.key === 'Enter' || e.key === ' ') bubble.click();
+            };
+          }, POPUP_DELAY);
+
         });
       }
       v.src = "https://cdn.voiceflow.com/widget-next/bundle.mjs"; v.type = "text/javascript"; s.parentNode.insertBefore(v, s);
   })(document, 'script');
-</script>
-
-<!-- ============================================================
-     2) POP-UP BUBLINA — vlastní doplněk, žádné skryté Voiceflow API.
-     Objeví se sama pár vteřin po načtení stránky, zve ke kliknutí.
-     Zmizí: (a) klikem na sebe sama — otevře chat, (b) klikem na
-     křížek, (c) automaticky, jakmile se otevře samotný chat
-     (i když ho návštěvník otevře přímo přes ikonu Voiceflow, ne
-     přes tuto bublinu).
-     ============================================================ -->
-<style>
-  #vf-popup {
-    position: fixed;
-    right: 24px;
-    bottom: calc(100px + env(safe-area-inset-bottom, 0px));
-    max-width: 270px;
-    background: #16243B;
-    color: #ffffff;
-    padding: 14px 38px 14px 16px;
-    border-radius: 14px 14px 4px 14px;
-    font: 400 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
-    cursor: pointer;
-    z-index: 999998;
-    opacity: 0;
-    transform: translateY(8px);
-    transition: opacity .35s ease, transform .35s ease;
-  }
-  #vf-popup.vf-show { opacity: 1; transform: translateY(0); }
-  #vf-popup::after {
-    content: "";
-    position: absolute;
-    right: 22px;
-    bottom: -8px;
-    border: 8px solid transparent;
-    border-top-color: #16243B;
-    border-bottom: 0;
-  }
-  #vf-popup-close {
-    position: absolute;
-    top: 4px;
-    right: 8px;
-    width: 26px;
-    height: 26px;
-    color: #94a3b8;
-    font-size: 16px;
-    line-height: 1;
-    background: none;
-    border: none;
-    cursor: pointer;
-  }
-  #vf-popup-close:hover { color: #ffffff; }
-
-  /* Mobil: bublina přes celou šířku, mírně výš (menší launcher, spodní
-     lišty prohlížečů), respektuje výřez/domácí pruh na iPhonu. */
-  @media (max-width: 480px) {
-    #vf-popup {
-      left: 12px;
-      right: 12px;
-      max-width: none;
-      bottom: calc(84px + env(safe-area-inset-bottom, 0px));
-      padding: 12px 34px 12px 14px;
-      font-size: 13.5px;
-      border-radius: 14px 14px 14px 4px;
-    }
-    #vf-popup::after {
-      right: auto;
-      left: 22px;
-      border-top-color: transparent;
-      border-bottom-color: #16243B;
-      bottom: auto;
-      top: -8px;
-    }
-  }
-</style>
-
-<div id="vf-popup" role="button" tabindex="0" aria-label="Otevřít chat">
-  <button id="vf-popup-close" aria-label="Zavřít">×</button>
-  👋 Máte dotaz k nemovitosti? Zeptejte se, poradíme hned.
-</div>
-
-<script>
-  (function () {
-    var STORAGE_KEY = 'vfPopupDismissedAt';
-    var HODIN_DO_DALSIHO_ZOBRAZENI = 24;
-    var ZPOZDENI_MS = 5000;
-
-    var bubble = document.getElementById('vf-popup');
-    var closeBtn = document.getElementById('vf-popup-close');
-    var skryto = false;
-
-    function bylaNedavnoZavrena() {
-      try {
-        var t = localStorage.getItem(STORAGE_KEY);
-        return !!t && (Date.now() - Number(t)) < HODIN_DO_DALSIHO_ZOBRAZENI * 3600 * 1000;
-      } catch (e) { return false; } // soukromé okno / zakázaný localStorage — popup se prostě vždy ukáže
-    }
-    function oznacitJakoZavrenou() {
-      try { localStorage.setItem(STORAGE_KEY, String(Date.now())); } catch (e) { /* nevadí */ }
-    }
-    function skryt() {
-      if (skryto) return;
-      skryto = true;
-      bubble.classList.remove('vf-show');
-      oznacitJakoZavrenou();
-    }
-
-    if (bylaNedavnoZavrena()) { bubble.remove(); return; }
-
-    setTimeout(function () { if (!skryto) bubble.classList.add('vf-show'); }, ZPOZDENI_MS);
-
-    bubble.addEventListener('click', function () {
-      if (window.voiceflow && window.voiceflow.chat) window.voiceflow.chat.open();
-      skryt();
-    });
-    closeBtn.addEventListener('click', function (e) {
-      e.stopPropagation();
-      skryt();
-    });
-    bubble.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' || e.key === ' ') bubble.click();
-    });
-
-    // Voiceflow nemá veřejně zdokumentovanou událost "chat se otevřel",
-    // tak to poznáme jinak: hlídáme, jestli se v DOMu neobjevil/nezvětšil
-    // element patřící Voiceflow widgetu na velikost odpovídající otevřenému
-    // chatu (ne jen malé kolečko/pilulka launcheru). Funguje bez ohledu na
-    // to, jestli chat otevřel klikem na naši bublinu nebo přímo na jejich ikonu.
-    if (typeof ResizeObserver !== 'undefined') {
-      var sledovane = new WeakSet();
-      var ro = new ResizeObserver(function (entries) {
-        for (var i = 0; i < entries.length; i++) {
-          var r = entries[i].contentRect;
-          if (r.width > 250 && r.height > 300) { skryt(); return; }
-        }
-      });
-      function pripojNove() {
-        var els = document.querySelectorAll('[id*="voiceflow" i], [class*="voiceflow" i], iframe[src*="voiceflow" i], iframe[title*="chat" i]');
-        for (var i = 0; i < els.length; i++) {
-          if (!sledovane.has(els[i])) { sledovane.add(els[i]); ro.observe(els[i]); }
-        }
-      }
-      pripojNove();
-      new MutationObserver(pripojNove).observe(document.documentElement, { childList: true, subtree: true });
-    }
-  })();
 </script>
