@@ -20,15 +20,16 @@
 <!-- ============================================================
      2) POP-UP BUBLINA — vlastní doplněk, žádné skryté Voiceflow API.
      Objeví se sama pár vteřin po načtení stránky, zve ke kliknutí.
-     Klik na bublinu otevře chat (window.voiceflow.chat.open()),
-     křížek ji jen zavře. Uloží si do localStorage, že ji návštěvník
-     viděl, a dalších 24 hodin ho už neobtěžuje.
+     Zmizí: (a) klikem na sebe sama — otevře chat, (b) klikem na
+     křížek, (c) automaticky, jakmile se otevře samotný chat
+     (i když ho návštěvník otevře přímo přes ikonu Voiceflow, ne
+     přes tuto bublinu).
      ============================================================ -->
 <style>
   #vf-popup {
     position: fixed;
     right: 24px;
-    bottom: 100px;              /* nad launcherem chatu — viz poznámka dole */
+    bottom: calc(100px + env(safe-area-inset-bottom, 0px));
     max-width: 270px;
     background: #16243B;
     color: #ffffff;
@@ -66,8 +67,27 @@
     cursor: pointer;
   }
   #vf-popup-close:hover { color: #ffffff; }
+
+  /* Mobil: bublina přes celou šířku, mírně výš (menší launcher, spodní
+     lišty prohlížečů), respektuje výřez/domácí pruh na iPhonu. */
   @media (max-width: 480px) {
-    #vf-popup { right: 12px; left: 12px; max-width: none; bottom: 92px; }
+    #vf-popup {
+      left: 12px;
+      right: 12px;
+      max-width: none;
+      bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+      padding: 12px 34px 12px 14px;
+      font-size: 13.5px;
+      border-radius: 14px 14px 14px 4px;
+    }
+    #vf-popup::after {
+      right: auto;
+      left: 22px;
+      border-top-color: transparent;
+      border-bottom-color: #16243B;
+      bottom: auto;
+      top: -8px;
+    }
   }
 </style>
 
@@ -84,6 +104,7 @@
 
     var bubble = document.getElementById('vf-popup');
     var closeBtn = document.getElementById('vf-popup-close');
+    var skryto = false;
 
     function bylaNedavnoZavrena() {
       try {
@@ -94,23 +115,50 @@
     function oznacitJakoZavrenou() {
       try { localStorage.setItem(STORAGE_KEY, String(Date.now())); } catch (e) { /* nevadí */ }
     }
+    function skryt() {
+      if (skryto) return;
+      skryto = true;
+      bubble.classList.remove('vf-show');
+      oznacitJakoZavrenou();
+    }
 
     if (bylaNedavnoZavrena()) { bubble.remove(); return; }
 
-    setTimeout(function () { bubble.classList.add('vf-show'); }, ZPOZDENI_MS);
+    setTimeout(function () { if (!skryto) bubble.classList.add('vf-show'); }, ZPOZDENI_MS);
 
     bubble.addEventListener('click', function () {
       if (window.voiceflow && window.voiceflow.chat) window.voiceflow.chat.open();
-      bubble.classList.remove('vf-show');
-      oznacitJakoZavrenou();
+      skryt();
     });
     closeBtn.addEventListener('click', function (e) {
       e.stopPropagation();
-      bubble.classList.remove('vf-show');
-      oznacitJakoZavrenou();
+      skryt();
     });
     bubble.addEventListener('keydown', function (e) {
       if (e.key === 'Enter' || e.key === ' ') bubble.click();
     });
+
+    // Voiceflow nemá veřejně zdokumentovanou událost "chat se otevřel",
+    // tak to poznáme jinak: hlídáme, jestli se v DOMu neobjevil/nezvětšil
+    // element patřící Voiceflow widgetu na velikost odpovídající otevřenému
+    // chatu (ne jen malé kolečko/pilulka launcheru). Funguje bez ohledu na
+    // to, jestli chat otevřel klikem na naši bublinu nebo přímo na jejich ikonu.
+    if (typeof ResizeObserver !== 'undefined') {
+      var sledovane = new WeakSet();
+      var ro = new ResizeObserver(function (entries) {
+        for (var i = 0; i < entries.length; i++) {
+          var r = entries[i].contentRect;
+          if (r.width > 250 && r.height > 300) { skryt(); return; }
+        }
+      });
+      function pripojNove() {
+        var els = document.querySelectorAll('[id*="voiceflow" i], [class*="voiceflow" i], iframe[src*="voiceflow" i], iframe[title*="chat" i]');
+        for (var i = 0; i < els.length; i++) {
+          if (!sledovane.has(els[i])) { sledovane.add(els[i]); ro.observe(els[i]); }
+        }
+      }
+      pripojNove();
+      new MutationObserver(pripojNove).observe(document.documentElement, { childList: true, subtree: true });
+    }
   })();
 </script>
