@@ -117,7 +117,10 @@
       oznacitJakoZavrenou();
     }
 
-    if (bylaNedavnoZavrena()) { bubble.remove(); return; }
+    // Tohle je jen NÁHLEDOVÝ soubor — na rozdíl od ostrého kódu na webu si
+    // "už zavřeno" nepamatuje mezi otevřeními, aby se bublina ukázala
+    // spolehlivě pokaždé, když si soubor otevřete znovu.
+    try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
 
     setTimeout(function () { if (!skryto) bubble.classList.add('vf-show'); }, ZPOZDENI_MS);
 
