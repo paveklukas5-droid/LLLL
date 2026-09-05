@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<title>Náhled pop-upu</title>
+</head>
+<body>
+
+<script type="text/javascript">
+  (function(d, t) {
+      var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
+      v.onload = function() {
+        window.voiceflow.chat.load({
+          verify: { projectID: '6a7f72bc44db7f81c4c88c9b' },
+          url: 'https://general-runtime.voiceflow.com',
+          voice: {
+            url: "https://runtime-api.voiceflow.com"
+          }
+        });
+      }
+      v.src = "https://cdn.voiceflow.com/widget-next/bundle.mjs"; v.type = "text/javascript"; s.parentNode.insertBefore(v, s);
+  })(document, 'script');
+</script>
+
+<style>
+  #vf-popup {
+    position: fixed;
+    right: 24px;
+    bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+    max-width: 270px;
+    background: #16243B;
+    color: #ffffff;
+    padding: 14px 38px 14px 16px;
+    border-radius: 14px 14px 4px 14px;
+    font: 400 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+    cursor: pointer;
+    z-index: 999998;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity .35s ease, transform .35s ease;
+  }
+  #vf-popup.vf-show { opacity: 1; transform: translateY(0); }
+  #vf-popup::after {
+    content: "";
+    position: absolute;
+    right: 22px;
+    bottom: -8px;
+    border: 8px solid transparent;
+    border-top-color: #16243B;
+    border-bottom: 0;
+  }
+  #vf-popup-close {
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    width: 26px;
+    height: 26px;
+    color: #94a3b8;
+    font-size: 16px;
+    line-height: 1;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  #vf-popup-close:hover { color: #ffffff; }
+
+  @media (max-width: 480px) {
+    #vf-popup {
+      left: 12px;
+      right: 12px;
+      max-width: none;
+      bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+      padding: 12px 34px 12px 14px;
+      font-size: 13.5px;
+      border-radius: 14px 14px 14px 4px;
+    }
+    #vf-popup::after {
+      right: auto;
+      left: 22px;
+      border-top-color: transparent;
+      border-bottom-color: #16243B;
+      bottom: auto;
+      top: -8px;
+    }
+  }
+</style>
+
+<div id="vf-popup" role="button" tabindex="0" aria-label="Otevřít chat">
+  <button id="vf-popup-close" aria-label="Zavřít">×</button>
+  👋 Máte dotaz k nemovitosti? Zeptejte se, poradíme hned.
+</div>
+
+<script>
+  (function () {
+    var STORAGE_KEY = 'vfPopupDismissedAt';
+    var HODIN_DO_DALSIHO_ZOBRAZENI = 24;
+    var ZPOZDENI_MS = 5000;
+
+    var bubble = document.getElementById('vf-popup');
+    var closeBtn = document.getElementById('vf-popup-close');
+    var skryto = false;
+
+    function bylaNedavnoZavrena() {
+      try {
+        var t = localStorage.getItem(STORAGE_KEY);
+        return !!t && (Date.now() - Number(t)) < HODIN_DO_DALSIHO_ZOBRAZENI * 3600 * 1000;
+      } catch (e) { return false; }
+    }
+    function oznacitJakoZavrenou() {
+      try { localStorage.setItem(STORAGE_KEY, String(Date.now())); } catch (e) {}
+    }
+    function skryt() {
+      if (skryto) return;
+      skryto = true;
+      bubble.classList.remove('vf-show');
+      oznacitJakoZavrenou();
+    }
+
+    if (bylaNedavnoZavrena()) { bubble.remove(); return; }
+
+    setTimeout(function () { if (!skryto) bubble.classList.add('vf-show'); }, ZPOZDENI_MS);
+
+    bubble.addEventListener('click', function () {
+      if (window.voiceflow && window.voiceflow.chat) window.voiceflow.chat.open();
+      skryt();
+    });
+    closeBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      skryt();
+    });
+    bubble.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') bubble.click();
+    });
+
+    if (typeof ResizeObserver !== 'undefined') {
+      var sledovane = new WeakSet();
+      var ro = new ResizeObserver(function (entries) {
+        for (var i = 0; i < entries.length; i++) {
+          var r = entries[i].contentRect;
+          if (r.width > 250 && r.height > 300) { skryt(); return; }
+        }
+      });
+      function pripojNove() {
+        var els = document.querySelectorAll('[id*="voiceflow" i], [class*="voiceflow" i], iframe[src*="voiceflow" i], iframe[title*="chat" i]');
+        for (var i = 0; i < els.length; i++) {
+          if (!sledovane.has(els[i])) { sledovane.add(els[i]); ro.observe(els[i]); }
+        }
+      }
+      pripojNove();
+      new MutationObserver(pripojNove).observe(document.documentElement, { childList: true, subtree: true });
+    }
+  })();
+</script>
+
+</body>
+</html>
