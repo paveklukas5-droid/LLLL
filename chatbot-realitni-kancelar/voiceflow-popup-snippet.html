@@ -1,0 +1,116 @@
+<!-- ============================================================
+     1) PŮVODNÍ VOICEFLOW EMBED — beze změny, nechte přesně takhle.
+     ============================================================ -->
+<script type="text/javascript">
+  (function(d, t) {
+      var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
+      v.onload = function() {
+        window.voiceflow.chat.load({
+          verify: { projectID: '6a7f72bc44db7f81c4c88c9b' },
+          url: 'https://general-runtime.voiceflow.com',
+          voice: {
+            url: "https://runtime-api.voiceflow.com"
+          }
+        });
+      }
+      v.src = "https://cdn.voiceflow.com/widget-next/bundle.mjs"; v.type = "text/javascript"; s.parentNode.insertBefore(v, s);
+  })(document, 'script');
+</script>
+
+<!-- ============================================================
+     2) POP-UP BUBLINA — vlastní doplněk, žádné skryté Voiceflow API.
+     Objeví se sama pár vteřin po načtení stránky, zve ke kliknutí.
+     Klik na bublinu otevře chat (window.voiceflow.chat.open()),
+     křížek ji jen zavře. Uloží si do localStorage, že ji návštěvník
+     viděl, a dalších 24 hodin ho už neobtěžuje.
+     ============================================================ -->
+<style>
+  #vf-popup {
+    position: fixed;
+    right: 24px;
+    bottom: 100px;              /* nad launcherem chatu — viz poznámka dole */
+    max-width: 270px;
+    background: #16243B;
+    color: #ffffff;
+    padding: 14px 38px 14px 16px;
+    border-radius: 14px 14px 4px 14px;
+    font: 400 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+    cursor: pointer;
+    z-index: 999998;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity .35s ease, transform .35s ease;
+  }
+  #vf-popup.vf-show { opacity: 1; transform: translateY(0); }
+  #vf-popup::after {
+    content: "";
+    position: absolute;
+    right: 22px;
+    bottom: -8px;
+    border: 8px solid transparent;
+    border-top-color: #16243B;
+    border-bottom: 0;
+  }
+  #vf-popup-close {
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    width: 26px;
+    height: 26px;
+    color: #94a3b8;
+    font-size: 16px;
+    line-height: 1;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  #vf-popup-close:hover { color: #ffffff; }
+  @media (max-width: 480px) {
+    #vf-popup { right: 12px; left: 12px; max-width: none; bottom: 92px; }
+  }
+</style>
+
+<div id="vf-popup" role="button" tabindex="0" aria-label="Otevřít chat">
+  <button id="vf-popup-close" aria-label="Zavřít">×</button>
+  👋 Máte dotaz k nemovitosti? Zeptejte se, poradíme hned.
+</div>
+
+<script>
+  (function () {
+    var STORAGE_KEY = 'vfPopupDismissedAt';
+    var HODIN_DO_DALSIHO_ZOBRAZENI = 24;
+    var ZPOZDENI_MS = 5000;
+
+    var bubble = document.getElementById('vf-popup');
+    var closeBtn = document.getElementById('vf-popup-close');
+
+    function bylaNedavnoZavrena() {
+      try {
+        var t = localStorage.getItem(STORAGE_KEY);
+        return !!t && (Date.now() - Number(t)) < HODIN_DO_DALSIHO_ZOBRAZENI * 3600 * 1000;
+      } catch (e) { return false; } // soukromé okno / zakázaný localStorage — popup se prostě vždy ukáže
+    }
+    function oznacitJakoZavrenou() {
+      try { localStorage.setItem(STORAGE_KEY, String(Date.now())); } catch (e) { /* nevadí */ }
+    }
+
+    if (bylaNedavnoZavrena()) { bubble.remove(); return; }
+
+    setTimeout(function () { bubble.classList.add('vf-show'); }, ZPOZDENI_MS);
+
+    bubble.addEventListener('click', function () {
+      if (window.voiceflow && window.voiceflow.chat) window.voiceflow.chat.open();
+      bubble.classList.remove('vf-show');
+      oznacitJakoZavrenou();
+    });
+    closeBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      bubble.classList.remove('vf-show');
+      oznacitJakoZavrenou();
+    });
+    bubble.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') bubble.click();
+    });
+  })();
+</script>
