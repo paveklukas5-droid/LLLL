@@ -1,0 +1,183 @@
+{
+  "_comment": "Kompletní konfigurace VAPI asistenta pro OKNOTHERM demo. Do 'model.messages[0].content' vloz CELY obsah souboru 01-system-prompt.md. Modely/hlasy si over v aktualnim VAPI dropdownu - nazvy se meni.",
+
+  "name": "OKNOTHERM – Reklamace a servis (CZ) – DEMO",
+
+  "firstMessage": "Dobrý den, tady Petra ze zákaznického servisu OKNOTHERM. Jak vám můžu pomoci?",
+  "firstMessageMode": "assistant-speaks-first",
+
+  "model": {
+    "provider": "anthropic",
+    "model": "claude-haiku-4-5",
+    "_poznamka_model": "claude-haiku-4-5 dává na tomhle promptu TTFT kolem 1,0 s při zlomku ceny - pro servisní linku správná volba. Když začne vypadávat z pravidel (slíbí termín, zapomene zavolat nástroj), přepni na claude-sonnet-5 a srovnej si to s cenou za hovor.",
+    "temperature": 0.3,
+    "maxTokens": 1500,
+    "_poznamka_maxtokens": "Nastaveno rovnou na bezpečnou hodnotu (poučeno z LOMAX buildu). Nástroj má 21 polí a čeština se tokenizuje hůř než angličtina - model musí celý JSON s argumenty vygenerovat v jednom tahu, a když maxTokens dojde dřív než JSON dopíše, výstup se nedá naparsovat a VAPI pošle prázdné {} nebo useknutá pole. 1500 je strop, ne cíl - reálná spotřeba na plné volání je ~400-700 tokenů.",
+    "emotionRecognitionEnabled": true,
+    "numFastTurns": 1,
+    "toolIds": [
+      "ID_NASTROJE_odeslat_reklamaci",
+      "ID_NASTROJE_ukoncit_hovor"
+    ],
+    "messages": [
+      {
+        "role": "system",
+        "content": ">>> SEM VLOZ CELY OBSAH SOUBORU 01-system-prompt.md <<<"
+      }
+    ]
+  },
+
+  "transcriber": {
+    "provider": "deepgram",
+    "model": "nova-3",
+    "language": "cs",
+    "smartFormat": false,
+    "numerals": false,
+    "endpointing": 500,
+    "confidenceThreshold": 0,
+    "_poznamka_endpointing": "500 ms, ne 300. Zákazník diktující číslice dělá mezi nimi pauzy delší než 300 ms - kratší endpointing rozseká jednu číselnou řadu na fragmenty, které model skládá dohromady sám. confidenceThreshold drž na 0: cokoli nad nulou zahazuje nejisté úseky POTICHU, a chybějící číslice je horší než špatně rozpoznaná, protože tu zákazník při rekapitulaci opraví.",
+    "_poznamka_cisla": "smartFormat i numerals MUSÍ být false. Zapnuté se snaží z diktovaných číslic udělat hezký zápis a z 6-2-1-0-0-4 udělají 621 004 nebo dokonce 61 001. U servisní linky chceš syrové číslice. nova-3 má na češtině znatelně vyšší confidence než nova-2 - nevracej se na nova-2.",
+    "_poznamka_transcriber": "Alternativy pro češtinu, otestuj co ti sedne nejlíp: (1) provider 'azure', language 'cs-CZ' – velmi spolehlivé u čísel a PSČ; (2) provider 'elevenlabs', model 'scribe_v1' – nejlepší přesnost u příjmení, o něco vyšší latence. Češtinu testuj VŽDY na reálném telefonním hovoru, ne v prohlížeči."
+  },
+
+  "voice": {
+    "provider": "azure",
+    "voiceId": "cs-CZ-VlastaNeural",
+    "speed": 1.0,
+    "_alternativa_elevenlabs": {
+      "provider": "11labs",
+      "voiceId": "NAHRAD_ID_CESKEHO_HLASU",
+      "model": "eleven_flash_v2_5",
+      "stability": 0.5,
+      "similarityBoost": 0.75,
+      "optimizeStreamingLatency": 3,
+      "_poznamka": "Zní přirozeněji, ale u českých čísel a diakritiky občas ujede výslovnost. Azure cs-CZ (Vlasta = ženský, Antonín = mužský) je pro telefonní servisní linku sázka na jistotu - a pro demo v pondělí je jistota důležitější než experiment."
+    },
+    "chunkPlan": {
+      "enabled": true,
+      "minCharacters": 30
+    }
+  },
+
+  "startSpeakingPlan": {
+    "waitSeconds": 0.5,
+    "smartEndpointingEnabled": true,
+    "transcriptionEndpointingPlan": {
+      "onPunctuationSeconds": 0.15,
+      "onNoPunctuationSeconds": 1.4,
+      "onNumberSeconds": 0.6
+    },
+    "_poznamka": "onNumberSeconds je klíčové – zákazník diktuje PSČ a čísla po skupinách a bot ho nesmí uprostřed přerušit."
+  },
+
+  "stopSpeakingPlan": {
+    "numWords": 2,
+    "voiceSeconds": 0.2,
+    "backoffSeconds": 1.0
+  },
+
+  "messagePlan": {
+    "idleMessages": [
+      "Jste tam ještě, prosím?",
+      "Slyšíme se?",
+      "Haló, potřebujete ještě něco?"
+    ],
+    "idleTimeoutSeconds": 9,
+    "idleMessageMaxSpokenCount": 2,
+    "silenceTimeoutMessage": "Zdá se, že se neslyšíme. Zkuste nám prosím zavolat znovu. Na shledanou."
+  },
+
+  "silenceTimeoutSeconds": 30,
+  "maxDurationSeconds": 900,
+  "backgroundSound": "off",
+  "backchannelingEnabled": false,
+  "backgroundDenoisingEnabled": true,
+  "modelOutputInMessagesEnabled": true,
+
+  "endCallFunctionEnabled": true,
+  "endCallMessage": "Děkuji za zavolání a přeji hezký den. Na shledanou.",
+  "endCallPhrases": [
+    "na shledanou",
+    "nashledanou",
+    "hezký den"
+  ],
+
+  "voicemailDetection": {
+    "provider": "vapi",
+    "backoffPlan": {
+      "startAtSeconds": 5,
+      "frequencySeconds": 5,
+      "maxRetries": 4
+    }
+  },
+  "voicemailMessage": "",
+
+  "analysisPlan": {
+    "summaryPlan": {
+      "enabled": true,
+      "messages": [
+        {
+          "role": "system",
+          "content": "Shrň telefonát v češtině do maximálně 4 vět: kdo volal, jakého produktu se problém týká, co je závada, a zda byla reklamace odeslána. Piš věcně, bez omáčky."
+        }
+      ]
+    },
+    "successEvaluationPlan": {
+      "enabled": true,
+      "rubric": "PassFail",
+      "messages": [
+        {
+          "role": "system",
+          "content": "Vyhodnoť jako PASS pouze pokud: (a) asistentka zjistila jméno, adresu včetně PSČ a konkrétní popis závady, (b) údaje zákazníkovi zrekapitulovala a on je potvrdil, (c) byl zavolán nástroj odeslat_reklamaci. FAIL, pokud asistentka slíbila cenu, termín nebo uznání reklamace, nebo pokud radila manipulaci s prasklým sklem, násilné otevírání zaseknutých dveří/oken nebo zásah do motoru pergoly/rolety. Volání, kde se ukázalo, že nejde o produkt OKNOTHERM nebo šlo o obchodní dotaz, hodnoť jako PASS, pokud byl zákazník správně nasměrován."
+        }
+      ]
+    },
+    "structuredDataPlan": {
+      "enabled": true,
+      "_poznamka": "Záchranná síť: i kdyby model zapomněl zavolat nástroj, tahle data přijdou v end-of-call-report a nic se neztratí.",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "jmeno_prijmeni": { "type": "string" },
+          "telefon_jine": { "type": "string", "description": "Jen pokud zákazník chtěl volat zpět na jiné číslo, než ze kterého volal" },
+          "adresa_ulice_cp": { "type": "string" },
+          "adresa_mesto": { "type": "string" },
+          "adresa_psc": { "type": "string" },
+          "typ_produktu": { "type": "string" },
+          "popis_zavady": { "type": "string" },
+          "priorita": { "type": "string" },
+          "bezpecnostni_riziko": { "type": "boolean" },
+          "reklamace_odeslana": {
+            "type": "boolean",
+            "description": "true pouze pokud byl v hovoru skutečně zavolán nástroj odeslat_reklamaci"
+          },
+          "duvod_neodeslani": {
+            "type": "string",
+            "description": "Pokud reklamace odeslána nebyla, jednou větou proč (zákazník zavěsil, nešlo o produkt OKNOTHERM, obchodní dotaz, technická chyba)."
+          }
+        }
+      }
+    }
+  },
+
+  "serverMessages": [
+    "end-of-call-report",
+    "status-update"
+  ],
+  "_poznamka_server": "Pro čisté demo (Talk to Assistant) tento blok klidně nech prázdný/nevyplněný - není potřeba, protože nástroj odeslat_reklamaci má vlastní server.url už nastavenou na živý demo Make scénář (viz 02-vapi-tools.json a 04-demo-navod.md). Tohle pole slouží jen pro DALŠÍ, oddělený report (celý přepis + nahrávka) po konci hovoru - pro pondělní demo to není potřeba řešit.",
+
+  "artifactPlan": {
+    "recordingEnabled": true,
+    "transcriptPlan": {
+      "enabled": true,
+      "assistantName": "Petra",
+      "userName": "Zákazník"
+    },
+    "_poznamka_gdpr": "Nahrávání hovoru je zpracování osobních údajů. Pro demo to nevadí, ale pro ostrý provoz buď nahrávání vypni (recordingEnabled: false), nebo doplň do firstMessage větu o nahrávání."
+  },
+
+  "compliancePlan": {
+    "hipaaEnabled": false,
+    "pciEnabled": false
+  }
+}
