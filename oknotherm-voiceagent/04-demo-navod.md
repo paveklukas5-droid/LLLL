@@ -83,6 +83,15 @@ cokoliv jiného, zkontroluj v Make execution log scénáře
 dorazil s vyplněnými argumenty – nejčastější příčina je popsaná v
 `../lomax-voiceagent/11-oprava-prazdne-argumenty.md`.
 
+**Latence na začátku hovoru.** Klient u LOMAXu hlásil znatelné zpomalení na
+začátku konverzace, které se pak "rozjelo". Příčina a oprava je popsaná v
+`../lomax-voiceagent/12-latence-na-zacatku-hovoru.md` – u OKNOTHERM promptu
+je tahle oprava (dynamické `{{now}}` na konci promptu, ne na začátku) už
+rovnou v `01-system-prompt.md` od první verze. I tak doporučuju: **pár
+minut před samotným demem si sám jednou zavolej** (stačí pozdrav a zavěsit),
+ať se zahřejí spojení k Deepgramu/Azure a je šance, že klientův hovor pak
+poběží rychle hned od první věty.
+
 ## 4. Co říct klientovi o e-mailové adrese
 
 E-mail teď chodí na `paveklukas5@gmail.com` (testovací schránka), ne na
