@@ -1,0 +1,119 @@
+{
+  "type": "object",
+  "properties": {
+    "jmeno_prijmeni": {
+      "type": "string",
+      "description": "Celé jméno a příjmení volajícího, tak jak ho nadiktoval."
+    },
+    "adresa_ulice_cp": {
+      "type": "string",
+      "description": "Ulice a číslo popisné adresy, kde dům stojí."
+    },
+    "adresa_mesto": {
+      "type": "string",
+      "description": "Město / obec, kde dům stojí."
+    },
+    "adresa_psc": {
+      "type": "string",
+      "description": "PSČ, 5 číslic bez mezery."
+    },
+    "typ_pozadavku": {
+      "type": "string",
+      "enum": [
+        "havarie",
+        "reklamace",
+        "servis",
+        "jine"
+      ],
+      "description": "havarie = akutní bezpečnostní riziko (únik plynu, oheň, praskající konstrukce, zaplavená elektroinstalace); reklamace = vada díla, zákazník to sám nazývá reklamací; servis = běžná pozáruční záležitost; jine = např. urgence již podané reklamace."
+    },
+    "oblast_domu": {
+      "type": "string",
+      "enum": [
+        "nosna_konstrukce",
+        "strecha",
+        "okna_dvere",
+        "fasada",
+        "podlahy",
+        "elektroinstalace",
+        "voda_topeni_kanalizace",
+        "izolace_vlhkost",
+        "jine"
+      ],
+      "description": "Část domu, které se závada týká."
+    },
+    "popis_zavady": {
+      "type": "string",
+      "description": "Konkrétní popis závady vlastními slovy zákazníka. Ne 'nefunguje to', ale konkrétně co a kde."
+    },
+    "priorita": {
+      "type": "string",
+      "enum": [
+        "vysoka",
+        "stredni",
+        "nizka"
+      ],
+      "description": "vysoka = bezpečnostní riziko nebo havárie; stredni = funkční vada bez rizika; nizka = kosmetická vada, drobnost."
+    },
+    "bezpecnostni_riziko": {
+      "type": "boolean",
+      "description": "true při úniku plynu, ohni, jiskřící elektroinstalaci, rychle se zvětšující prasklině v nosné zdi, prohýbajícím se stropu/krovu, nebo vodě zaplavující elektroinstalaci."
+    },
+    "shrnuti_pro_technika": {
+      "type": "string",
+      "description": "1-2 věty pro kolegu ze servisu: co se stalo a co si nejspíš bude potřebovat vzít s sebou."
+    },
+    "telefon_jine": {
+      "type": "string",
+      "description": "Alternativní telefonní číslo pro zpětné volání. Vyplň POUZE tehdy, když zákazník chce být kontaktován na JINÉ číslo, než ze kterého volá, nebo je jeho číslo skryté. Jinak prázdný řetězec."
+    },
+    "cislo_stavby": {
+      "type": "string",
+      "description": "Výrobní nebo hospodářské číslo stavby, pokud ho zákazník má. Jinak prázdný řetězec."
+    },
+    "rok_predani": {
+      "type": "string",
+      "description": "Přibližný rok předání domu, např. '2019'. Prázdný řetězec, pokud zákazník neví."
+    },
+    "dostupnost": {
+      "type": "string",
+      "description": "Kdy je zákazník k zastižení / kdy se mu hodí návštěva technika."
+    },
+    "technicke_detaily": {
+      "type": "string",
+      "description": "Odpovědi na diagnostické otázky specifické pro danou oblast domu (viz sekce 5 promptu). Jinak prázdný řetězec."
+    },
+    "kdy_zacalo": {
+      "type": "string",
+      "description": "Kdy se závada poprvé objevila, slovy zákazníka."
+    },
+    "opakovana_zavada": {
+      "type": "boolean",
+      "description": "true, pokud zákazník uvedl, že se stejný problém už dříve řešil."
+    },
+    "ma_fotografie": {
+      "type": "boolean",
+      "description": "true, pokud zákazník uvedl, že fotografii závady má nebo ji pořídí a pošle."
+    },
+    "je_dum_obyvany": {
+      "type": "boolean",
+      "description": "true, pokud zákazník uvedl, že v domě již bydlí. Jinak false, pokud výslovně řekl, že dům je prázdný/nedokončený/teprve se stěhují."
+    },
+    "poznamka": {
+      "type": "string",
+      "description": "Cokoli dalšího podstatného: volající není původní majitel, urgence, zákazník si není jistý, že jde o dům RD Rýmařov, apod."
+    }
+  },
+  "required": [
+    "jmeno_prijmeni",
+    "adresa_ulice_cp",
+    "adresa_mesto",
+    "adresa_psc",
+    "typ_pozadavku",
+    "oblast_domu",
+    "popis_zavady",
+    "priorita",
+    "bezpecnostni_riziko",
+    "shrnuti_pro_technika"
+  ]
+}

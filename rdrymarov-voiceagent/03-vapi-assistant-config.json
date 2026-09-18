@@ -1,0 +1,174 @@
+{
+  "_comment": "Kompletni konfigurace VAPI asistenta pro RD Rymarov servis/reklamace. Do 'model.messages[0].content' vloz CELY obsah souboru 01-system-prompt.md. Modely/hlasy si over v aktualnim VAPI dropdownu - nazvy se meni.",
+
+  "name": "RD Rýmařov – Servis a reklamace (CZ)",
+
+  "firstMessage": "Dobrý den, tady Lucie ze servisu RD Rýmařov. Jak vám můžu pomoci?",
+  "firstMessageMode": "assistant-speaks-first",
+
+  "model": {
+    "provider": "anthropic",
+    "model": "claude-haiku-4-5",
+    "_poznamka_model": "claude-haiku-4-5 je odladěné jako nejrychlejší/nejlevnější použitelná volba pro servisní linku (viz LOMAX). Sonnet jsme zkoušeli u LOMAXu a byl POMALEJŠÍ i dražší, ne rychlejší - nepřepínej na něj jako na 'lepší' řešení latence.",
+    "temperature": 0.3,
+    "maxTokens": 1500,
+    "_poznamka_maxtokens": "Nastaveno rovnou na bezpečnou hodnotu od začátku (poučeno z LOMAX bugu s prázdnými argumenty). Nástroj má 20 polí - nízký maxTokens způsobí, že se JSON s argumenty uřízne uprostřed a VAPI/Make dostane prázdná nebo neúplná data.",
+    "emotionRecognitionEnabled": false,
+    "_poznamka_emotion": "Záměrně VYPNUTO. U LOMAXu jsme zjistili, že tahle funkce nikde v promptu není využívaná (žádné rozhodování na jejím základě), ale stojí extra latenci na každém tahu. Pokud bys chtěl/a v budoucnu podle emoce něco měnit v chování bota, zapni to zpátky - ale pak to real použij v promptu, jinak je to jen zbytečné zpomalení.",
+    "numFastTurns": 1,
+    "toolIds": [
+      "ID_NASTROJE_odeslat_reklamaci",
+      "ID_NASTROJE_ukoncit_hovor"
+    ],
+    "messages": [
+      {
+        "role": "system",
+        "content": ">>> SEM VLOZ CELY OBSAH SOUBORU 01-system-prompt.md <<<"
+      }
+    ]
+  },
+
+  "transcriber": {
+    "provider": "deepgram",
+    "model": "nova-3",
+    "language": "cs",
+    "smartFormat": false,
+    "numerals": false,
+    "endpointing": 500,
+    "confidenceThreshold": 0,
+    "_poznamka_endpointing": "500 ms, ne 300. Zákazník diktující číslice dělá mezi nimi pauzy delší než 300 ms - kratší endpointing rozseká jednu číselnou řadu na fragmenty. confidenceThreshold drž na 0.",
+    "_poznamka_cisla": "smartFormat i numerals MUSÍ být false, jinak si Deepgram sám 'opraví' diktované číslice na hezčí zápis a rozbije to."
+  },
+
+  "voice": {
+    "provider": "azure",
+    "voiceId": "cs-CZ-VlastaNeural",
+    "speed": 1.0,
+    "chunkPlan": {
+      "enabled": true,
+      "minCharacters": 30
+    }
+  },
+
+  "startSpeakingPlan": {
+    "waitSeconds": 0.5,
+    "smartEndpointingEnabled": true,
+    "transcriptionEndpointingPlan": {
+      "onPunctuationSeconds": 0.15,
+      "onNoPunctuationSeconds": 1.4,
+      "onNumberSeconds": 0.6
+    },
+    "_poznamka": "onNumberSeconds je klíčové – zákazník diktuje PSČ a čísla po skupinách a bot ho nesmí uprostřed přerušit."
+  },
+
+  "stopSpeakingPlan": {
+    "numWords": 2,
+    "voiceSeconds": 0.2,
+    "backoffSeconds": 1.0
+  },
+
+  "messagePlan": {
+    "idleMessages": [
+      "Jste tam ještě, prosím?",
+      "Slyšíme se?",
+      "Haló, potřebujete ještě něco?"
+    ],
+    "idleTimeoutSeconds": 9,
+    "idleMessageMaxSpokenCount": 2,
+    "silenceTimeoutMessage": "Zdá se, že se neslyšíme. Zkuste nám prosím zavolat znovu. Na shledanou."
+  },
+
+  "silenceTimeoutSeconds": 30,
+  "maxDurationSeconds": 900,
+  "backgroundSound": "off",
+  "backchannelingEnabled": false,
+  "backgroundDenoisingEnabled": true,
+  "modelOutputInMessagesEnabled": true,
+
+  "endCallFunctionEnabled": true,
+  "endCallMessage": "Děkuji za zavolání a přeji hezký den. Na shledanou.",
+  "endCallPhrases": [
+    "na shledanou",
+    "nashledanou",
+    "hezký den"
+  ],
+
+  "voicemailDetection": {
+    "provider": "vapi",
+    "backoffPlan": {
+      "startAtSeconds": 5,
+      "frequencySeconds": 5,
+      "maxRetries": 4
+    }
+  },
+  "voicemailMessage": "",
+
+  "analysisPlan": {
+    "summaryPlan": {
+      "enabled": true,
+      "messages": [
+        {
+          "role": "system",
+          "content": "Shrň telefonát v češtině do maximálně 4 vět: kdo volal, které oblasti domu se týká problém, co je závada, a zda byla reklamace odeslána nebo šlo o havárii nasměrovanou na tísňovou linku."
+        }
+      ]
+    },
+    "successEvaluationPlan": {
+      "enabled": true,
+      "rubric": "PassFail",
+      "messages": [
+        {
+          "role": "system",
+          "content": "Vyhodnoť jako PASS pouze pokud: (a) asistentka zjistila jméno, adresu a konkrétní popis závady, (b) u havárie okamžitě nasměrovala zákazníka na tísňovou linku před sběrem dalších údajů, (c) údaje zrekapitulovala a zákazník je potvrdil, (d) byl zavolán nástroj odeslat_reklamaci (pokud nešlo o havárii, kde zákazník hovor ukončil kvůli bezpečí). FAIL, pokud asistentka slíbila konkrétní řešení vady, termín nebo záruční lhůtu na cokoli mimo nosnou konstrukci, nebo radila manipulaci s plynem, ohněm či praskající konstrukcí."
+        }
+      ]
+    },
+    "structuredDataPlan": {
+      "enabled": true,
+      "_poznamka": "Záchranná síť: i kdyby model zapomněl zavolat nástroj, tahle data přijdou v end-of-call-report a nic se neztratí.",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "jmeno_prijmeni": { "type": "string" },
+          "telefon_jine": { "type": "string" },
+          "adresa_ulice_cp": { "type": "string" },
+          "adresa_mesto": { "type": "string" },
+          "adresa_psc": { "type": "string" },
+          "oblast_domu": { "type": "string" },
+          "popis_zavady": { "type": "string" },
+          "priorita": { "type": "string" },
+          "bezpecnostni_riziko": { "type": "boolean" },
+          "reklamace_odeslana": {
+            "type": "boolean",
+            "description": "true pouze pokud byl v hovoru skutečně zavolán nástroj odeslat_reklamaci"
+          },
+          "duvod_neodeslani": {
+            "type": "string",
+            "description": "Pokud reklamace odeslána nebyla, jednou větou proč (havárie, zákazník zavěsil, nešlo o dům RD Rýmařov, technická chyba)."
+          }
+        }
+      }
+    }
+  },
+
+  "serverMessages": [
+    "end-of-call-report",
+    "status-update"
+  ],
+  "_poznamka_server": "Pro čisté demo (Talk to Assistant) tento blok klidně nech prázdný - není potřeba, tool odeslat_reklamaci má vlastní server.url.",
+
+  "artifactPlan": {
+    "recordingEnabled": true,
+    "transcriptPlan": {
+      "enabled": true,
+      "assistantName": "Lucie",
+      "userName": "Zákazník"
+    },
+    "_poznamka_gdpr": "Nahrávání hovoru je zpracování osobních údajů. Buď ho vypni (recordingEnabled: false), nebo doplň do firstMessage větu o nahrávání před ostrým provozem."
+  },
+
+  "compliancePlan": {
+    "hipaaEnabled": false,
+    "pciEnabled": false
+  }
+}
