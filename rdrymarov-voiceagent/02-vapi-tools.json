@@ -30,7 +30,7 @@
         }
       ],
       "function": {
-        "name": "odeslat_reklamaci",
+        "name": "odeslat_reklamaciv2",
         "description": "Odešle kompletní reklamaci nebo servisní požadavek zákazníka do systému RD Rýmařov, který ho e-mailem předá servisnímu/reklamačnímu oddělení. Volej AŽ POTÉ, co jsi zákazníkovi zrekapitulovala údaje a on je potvrdil. Volej maximálně jednou za hovor (kromě jednoho opakování při chybě). Pole, která nemáš, posílej jako prázdný řetězec - nikdy je nevymýšlej.",
         "strict": true,
         "parameters": {

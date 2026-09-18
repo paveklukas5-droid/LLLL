@@ -3,10 +3,10 @@
 VAPI dashboard neumí vložit JSON celého nástroje najednou — jen JSON schéma
 pole **Parameters**. Tenhle návod je pro klikání ve formuláři, bez API.
 
-## 1. `odeslat_reklamaci` (hlavní nástroj)
+## 1. `odeslat_reklamaciv2` (hlavní nástroj)
 
 1. **Tools → Create Tool → Function**
-2. **Name**: `odeslat_reklamaci`
+2. **Name**: `odeslat_reklamaciv2`
 3. **Description** (textové pole): zkopíruj z `02-vapi-tools.json` klíč
    `function.description`.
 4. Zapni **Strict Mode**.
@@ -43,7 +43,7 @@ Jinak tenhle nástroj úplně vynech.
 
 ## 4. Připojení k asistentovi
 
-Assistant → Model → **Tools** → přidej `odeslat_reklamaci` a `ukoncit_hovor`
+Assistant → Model → **Tools** → přidej `odeslat_reklamaciv2` a `ukoncit_hovor`
 (a `prepojit_na_operatora`, pokud jsi ho založil/a). Ulož ID nástrojů, budeš
 je potřebovat i v `model.toolIds` v `03-vapi-assistant-config.json`, pokud
 konfiguruješ asistenta přes API místo dashboardu.

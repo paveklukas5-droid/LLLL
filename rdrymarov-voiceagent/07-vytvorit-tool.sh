@@ -14,7 +14,7 @@ set -euo pipefail
 VAPI_KEY="TVUJ_VAPI_PRIVATE_KEY"
 MAKE_WEBHOOK="https://hook.eu1.make.com/vsqv4e6km52dihhfg45ak9ex9qhdrpj8"
 
-echo "→ Zakládám nástroj odeslat_reklamaci…"
+echo "→ Zakládám nástroj odeslat_reklamaciv2…"
 
 curl -sS -X POST https://api.vapi.ai/tool \
   -H "Authorization: Bearer ${VAPI_KEY}" \

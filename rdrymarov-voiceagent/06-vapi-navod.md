@@ -12,7 +12,7 @@ Dvě cesty, vyber si jednu:
 - **Ručně v dashboardu**: `08-tool-rucne-ve-vapi.md`, krok za krokem,
   s JSON schématem parametrů v `05-parametry.json`.
 
-Založ `odeslat_reklamaci` a `ukoncit_hovor`. `prepojit_na_operatora` jen
+Založ `odeslat_reklamaciv2` a `ukoncit_hovor`. `prepojit_na_operatora` jen
 pokud máš živou linku k přepojení.
 
 Ulož si `id` obou (resp. všech) vytvořených nástrojů.

@@ -10,7 +10,7 @@ Make workflow — je hotový a aktivní, ne jen navržený.
 - **Webhook**: id `3747573`, URL `https://hook.eu1.make.com/vsqv4e6km52dihhfg45ak9ex9qhdrpj8`
   — tahle URL je už vyplněná v `02-vapi-tools.json`.
 - **Datová struktura**: `VAPI RD Rýmařov reklamace` (id `589246`), přesně
-  podle všech 20 polí nástroje `odeslat_reklamaci` — žádné kopírování
+  podle všech 20 polí nástroje `odeslat_reklamaciv2` — žádné kopírování
   odjinud (to byla přesná příčina prázdných e-mailů u LOMAXu, viz
   `../lomax-voiceagent/11-oprava-prazdne-argumenty.md`).
 

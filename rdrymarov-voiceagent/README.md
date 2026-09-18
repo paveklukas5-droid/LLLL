@@ -17,7 +17,7 @@ dashboardu (viz `06-vapi-navod.md` → Fáze 1-2) a reálný testovací hovor.
 | `02-vapi-tools.json` | Definice nástrojů. Webhook je živě napojený na hotový Make scénář. |
 | `03-vapi-assistant-config.json` | Kompletní konfigurace asistenta. |
 | `04-make-scenar.md` | Jak funguje živý Make scénář, kam teď chodí e-mail, jak přepnout na produkci. |
-| `05-parametry.json` | Jen JSON schéma parametrů `odeslat_reklamaci`, pro ruční vložení do VAPI dashboardu. |
+| `05-parametry.json` | Jen JSON schéma parametrů `odeslat_reklamaciv2`, pro ruční vložení do VAPI dashboardu. |
 | `06-vapi-navod.md` | **Sem jdi jako druhý.** Kompletní krok-za-krokem návod na založení ve VAPI. |
 | `07-vytvorit-tool.sh` | API skript pro založení nástrojů (alternativa k ručnímu klikání). |
 | `08-tool-rucne-ve-vapi.md` | Ruční založení nástrojů přes dashboard, pole po poli. |

@@ -17,7 +17,7 @@
     "_poznamka_emotion": "Záměrně VYPNUTO. U LOMAXu jsme zjistili, že tahle funkce nikde v promptu není využívaná (žádné rozhodování na jejím základě), ale stojí extra latenci na každém tahu. Pokud bys chtěl/a v budoucnu podle emoce něco měnit v chování bota, zapni to zpátky - ale pak to real použij v promptu, jinak je to jen zbytečné zpomalení.",
     "numFastTurns": 1,
     "toolIds": [
-      "ID_NASTROJE_odeslat_reklamaci",
+      "ID_NASTROJE_odeslat_reklamaciv2",
       "ID_NASTROJE_ukoncit_hovor"
     ],
     "messages": [
@@ -119,7 +119,7 @@
       "messages": [
         {
           "role": "system",
-          "content": "Vyhodnoť jako PASS pouze pokud: (a) asistentka zjistila jméno, adresu a konkrétní popis závady, (b) u havárie okamžitě nasměrovala zákazníka na tísňovou linku před sběrem dalších údajů, (c) údaje zrekapitulovala a zákazník je potvrdil, (d) byl zavolán nástroj odeslat_reklamaci (pokud nešlo o havárii, kde zákazník hovor ukončil kvůli bezpečí). FAIL, pokud asistentka slíbila konkrétní řešení vady, termín nebo záruční lhůtu na cokoli mimo nosnou konstrukci, nebo radila manipulaci s plynem, ohněm či praskající konstrukcí."
+          "content": "Vyhodnoť jako PASS pouze pokud: (a) asistentka zjistila jméno, adresu a konkrétní popis závady, (b) u havárie okamžitě nasměrovala zákazníka na tísňovou linku před sběrem dalších údajů, (c) údaje zrekapitulovala a zákazník je potvrdil, (d) byl zavolán nástroj odeslat_reklamaciv2 (pokud nešlo o havárii, kde zákazník hovor ukončil kvůli bezpečí). FAIL, pokud asistentka slíbila konkrétní řešení vady, termín nebo záruční lhůtu na cokoli mimo nosnou konstrukci, nebo radila manipulaci s plynem, ohněm či praskající konstrukcí."
         }
       ]
     },
@@ -140,7 +140,7 @@
           "bezpecnostni_riziko": { "type": "boolean" },
           "reklamace_odeslana": {
             "type": "boolean",
-            "description": "true pouze pokud byl v hovoru skutečně zavolán nástroj odeslat_reklamaci"
+            "description": "true pouze pokud byl v hovoru skutečně zavolán nástroj odeslat_reklamaciv2"
           },
           "duvod_neodeslani": {
             "type": "string",
@@ -155,7 +155,7 @@
     "end-of-call-report",
     "status-update"
   ],
-  "_poznamka_server": "Pro čisté demo (Talk to Assistant) tento blok klidně nech prázdný - není potřeba, tool odeslat_reklamaci má vlastní server.url.",
+  "_poznamka_server": "Pro čisté demo (Talk to Assistant) tento blok klidně nech prázdný - není potřeba, tool odeslat_reklamaciv2 má vlastní server.url.",
 
   "artifactPlan": {
     "recordingEnabled": true,
