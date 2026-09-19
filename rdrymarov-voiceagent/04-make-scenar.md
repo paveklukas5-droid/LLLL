@@ -57,6 +57,39 @@ v `message.toolCalls[0].function.arguments` — ne jen že scénář hlásí
 `SUCCESS`. To je přesně krok, který se u LOMAXu přeskočil a proto se na
 prázdné e-maily přišlo pozdě.
 
+## Vyřešeno: prázdné hodnoty v prvním reálném testu (19.9.2026)
+
+Po prvním reálném hovoru (přes web/"online", ne telefonem) dorazil e-mail
+s reklamací, ale **všechna pole byla prázdná** ("-", "Ne", "Jiné"), přestože
+bot v hovoru správně kladl otázky.
+
+**Diagnóza** (přes Make execution log, ne přes VAPI, tam přístup nemám):
+ta konkrétní exekuce měla `operations: 4` a `transfer: 65779` bajtů — oproti
+běžné exekuci s reálným tool-callem, která má `operations: 1` a `transfer: 0`.
+Tak velký přenos dat odpovídá **end-of-call-report** zprávě (obsahuje celý
+přepis hovoru, klidně desítky kB), ne malé zprávě s argumenty nástroje. Jinými
+slovy: na webhook dorazila **jiná zpráva než tool-call** (nejspíš proto, že
+asistentovo obecné pole **Server URL** — na úrovni celého asistenta, ne
+nástroje — bylo omylem nastavené na stejnou webhook adresu jako nástroj
+`odeslat_reklamaciv2`). Náš mapping čeká `message.toolCalls[1].function.arguments.*`,
+což u end-of-call-report zprávy neexistuje — proto všechno spadlo na `ifempty`/
+`switch` výchozí hodnoty ("-", "Jiné", "Ne").
+
+**Oprava (hotovo, aktivní):** přidal jsem na modul `Set Variables` filtr,
+který zpracuje dál jen zprávy, kde `message.type` je přesně `"tool-calls"`.
+Cokoli jiného (end-of-call-report, status-update, cokoli budoucí) se teď
+zastaví hned za webhookem, nic se neodešle e-mailem a nic zbytečně nespotřebuje
+kredity. Otestováno oběma směry: zpráva `end-of-call-report` → scénář se
+zastaví na 1 operaci (žádný e-mail); reálný tvar `tool-calls` → e-mail projde
+normálně.
+
+**Co bys měl/a ještě zkontrolovat na straně VAPI** (tam nemám přístup):
+v Assistant → Advanced (nebo Server v horní úrovni configu, ne u nástroje)
+zkontroluj, jestli tam náhodou není nastavená stejná webhook URL jako
+u nástroje. Pokud ano, buď ji smaž (pro čisté demo ji nepotřebuješ, viz
+`_poznamka_server` v `03-vapi-assistant-config.json`), nebo klidně nech —
+filtr v Make teď takové zprávy neškodně ignoruje.
+
 ## Pokud budeš chtít scénář upravit
 
 Datová struktura na webhooku je nastavená s `strict: false` — nová/neplánovaná
