@@ -182,3 +182,31 @@ Z minulých kol reálně funguje:
 | ☐ | Přepnout model na Haiku 4.5 |
 | ☐ | Smazat obě duchařské zakázky `SRV-20260817-EDB7B8` a `SRV-20260817-36A982` z dispečinku |
 | ☐ | Testovací hovor → v Calls zkontrolovat, že `arguments` **není** `{}` |
+
+---
+
+## 19.9. — stejná chyba se zopakovala u RD Rýmařov, potvrzeno + nové zjištění
+
+Nový projekt (`rdrymarov-voiceagent`), nástroj `odeslat_reklamaciv2` — první
+reálný testovací hovor dorazil s `message.type: tool-calls` (správně) a
+`isPrecededByText: true`, ale `arguments: Empty`. Přesně bod 0 znovu.
+
+**Příčina tentokrát byla jednodušší, než u LOMAXu:** `Max Tokens` na
+asistentovi nebylo nastavené **vůbec** (repo soubor `03-vapi-assistant-config.json`
+má `1500` už od první verze — ale to je jen náš návrh, na živého asistenta
+ve VAPI ho musí někdo ručně přenést, a tohle se při zakládání přeskočilo).
+S výchozím VAPI limitem 100 tokenů a `isPrecededByText: true` (model něco
+řekl a *pak* měl vygenerovat 20polový JSON) nebyl na JSON vůbec žádný
+prostor. Oprava: nastavit Max Tokens na 1500 v Assistant → Model.
+
+**Nové zjištění při té příležitosti:** když majitel poslal JSON schéma,
+které mu VAPI dashboard reálně vrátil z uloženého nástroje, pořadí polí
+v `properties` bylo **jiné**, než jsme posílali (`povinná pole první`
+pryč) — VAPI dashboard si při uložení JSON přes UI **sám přeuspořádá
+klíče objektu**. Znamená to, že obrana "povinná pole první" (bod B výše)
+**funguje spolehlivě jen při založení nástroje přímo přes API** (`07-vytvorit-tool.sh`
+u LOMAXu, stejný soubor u ostatních projektů) — při ručním vložení JSON do
+dashboardu (`08-tool-rucne-ve-vapi.md` postup) se pořadí po uložení ztratí.
+Pro maxTokens 1500 to není kritické (žádné pole by se neměl ořezávat), ale
+až se příště bude řešit stejný bug s nižším maxTokens, pamatuj, že pořadí
+v dashboardu není záruka.
