@@ -3,7 +3,8 @@
 
   "name": "OKNOTHERM – Reklamace a servis (CZ) – DEMO",
 
-  "firstMessage": "Dobrý den, tady Petra ze zákaznického servisu OKNOTHERM. Jak vám můžu pomoci?",
+  "firstMessage": "Dobrý den, tady Petra ze zákaznického servisu Okno Therm. Jak vám můžu pomoci?",
+  "_poznamka_vyslovnost": "Firma se píše 'OKNOTHERM' jedním slovem, ale takhle slitě to Azure hlas občas přečte špatně a spolkne 'r' - proto je tady i v celém 01-system-prompt.md schválně napsáno 'Okno Therm' se dvěma slovy, jen kvůli výslovnosti. Nic to nemění na správném psaném názvu firmy.",
   "firstMessageMode": "assistant-speaks-first",
 
   "model": {
