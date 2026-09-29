@@ -17,7 +17,7 @@ bioklimatické pergoly, fasády — https://www.oknotherm.cz/), postavená na VA
 
 ## V kostce
 
-- Persona: **Petra**, čeština, ženský rod důsledně (viz prompt sekce 1, bod 2b).
+- Persona: **Petra**, čeština, ženský rod důsledně (viz začátek promptu, sekce „Kdo jsi").
 - Model: `claude-haiku-4-5`, `maxTokens: 1500` (nastaveno rovnou správně od
   začátku — viz `../lomax-voiceagent/11-oprava-prazdne-argumenty.md`, proč je
   to důležité).

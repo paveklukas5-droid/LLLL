@@ -71,8 +71,8 @@ ať bot neskáče do řeči při diktování PSČ).
 ## 3. Vyzkoušej si to sám PŘED demem
 
 Dashboard → tvůj asistent → **Talk to Assistant** (mikrofon v prohlížeči).
-Projdi si nahlas aspoň dva scénáře z `01-system-prompt.md` sekce 10
-(standardní okno a prasklé sklo), ideálně 2-3x, ať slyšíš, kde to drhne.
+Projdi si nahlas aspoň dva scénáře (standardní okno, které drhne, a prasklé
+sklo), ideálně 2-3x, ať slyšíš, kde to drhne.
 Pak si zavolej **telefonem** (ne jen v prohlížeči) – čeština na telefonní
 lince zní jinak a diktování čísel/PSČ se chová jinak než v prohlížeči.
 
@@ -124,7 +124,7 @@ chodit (typicky Šárka Zemanová – reklamace, Tereza Horáková – servis).
   to je záměr (viz LOMAX finální wording fix, stejný princip platí i tady).
 - Neslibuj konkrétní záruční lhůtu ani cenu opravy nahlas při demu – prompt
   bota to sám o sobě nedělá, ale kdyby se klient zeptal ústně tebe osobně,
-  drž se stejné opatrnosti jako bot (sekce 3.2 promptu).
+  drž se stejné opatrnosti jako bot (sekce „Co nikdy" v promptu).
 - Pokud during demo dojde k výpadku (VAPI/Deepgram hiccup), měj připravený
   fallback: druhý telefon/tab s Talk to Assistant jako záložní kanál.
 
