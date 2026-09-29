@@ -1,0 +1,170 @@
+{
+  "_comment": "Nástroje pro Hobbytec. Jen první je NOVÝ (musíš ho vytvořit). ukoncit_hovor už máš z LOMAX asistenta. Webhook je živý (Make scénář hobbytec reklamace voicebot, id 7683216).",
+  "tools": [
+    {
+      "type": "function",
+      "async": false,
+      "server": {
+        "url": "https://hook.eu1.make.com/ssnb30pw999uogzkqjfac8mvq6nec1u3",
+        "timeoutSeconds": 25
+      },
+      "messages": [
+        {
+          "type": "request-start",
+          "content": "Zapisuji váš požadavek, moment prosím.",
+          "blocking": false
+        },
+        {
+          "type": "request-complete",
+          "content": "Hotovo, požadavek mám předaný."
+        },
+        {
+          "type": "request-failed",
+          "content": "Omlouvám se, systém mi to teď nepřijal. Zkusím to ještě jednou."
+        },
+        {
+          "type": "request-response-delayed",
+          "content": "Ještě to zpracovávám, děkuji za trpělivost.",
+          "timingMilliseconds": 8000
+        }
+      ],
+      "function": {
+        "name": "odeslat_reklamaci_hobbytec",
+        "description": "Zapíše reklamační nebo servisní požadavek zákazníka Hobbytec a předá ho e-mailem reklamačnímu oddělení. Volej AŽ po zrekapitulování a potvrzení údajů zákazníkem, jen jednou za hovor (znovu jen po chybě). Co nevíš, pošli jako prázdný řetězec.",
+        "strict": true,
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "jmeno_prijmeni": {
+              "type": "string",
+              "description": "Celé jméno a příjmení volajícího."
+            },
+            "adresa_ulice_cp": {
+              "type": "string",
+              "description": "Ulice a číslo popisné, kam byl výrobek dodán nebo kde je namontovaný."
+            },
+            "adresa_mesto": {
+              "type": "string",
+              "description": "Město nebo obec."
+            },
+            "adresa_psc": {
+              "type": "string",
+              "description": "Směrovací číslo, 5 číslic bez mezery."
+            },
+            "typ_pozadavku": {
+              "type": "string",
+              "enum": [
+                "reklamace_vady",
+                "poskozeno_pri_preprave",
+                "neuplna_nebo_chybna_dodavka",
+                "servis",
+                "vraceni_zbozi",
+                "jine"
+              ],
+              "description": "reklamace_vady = vada výrobku; poskozeno_pri_preprave = poškozená zásilka od přepravce; neuplna_nebo_chybna_dodavka = chybí díly nebo přišlo jiné zboží; servis = pozáruční oprava či seřízení; vraceni_zbozi = odstoupení od smlouvy; jine."
+            },
+            "typ_produktu": {
+              "type": "string",
+              "enum": [
+                "hlinikova_pergola",
+                "zimni_zahrada",
+                "pristresek_na_auto",
+                "zahradni_domek_nebo_sklenik",
+                "stineni",
+                "zahradni_vybaveni",
+                "jine"
+              ],
+              "description": "Kategorie výrobku. zahradni_vybaveni = nábytek, gril, bazén, nářadí a další doplňky."
+            },
+            "popis_zavady": {
+              "type": "string",
+              "description": "Co je špatně, konkrétně a slovy zákazníka."
+            },
+            "priorita": {
+              "type": "string",
+              "enum": [
+                "vysoka",
+                "stredni",
+                "nizka"
+              ],
+              "description": "vysoka = bezpečnostní riziko nebo poškozená zásilka do 2 pracovních dnů od převzetí; stredni = běžná vada; nizka = kosmetická drobnost."
+            },
+            "bezpecnostni_riziko": {
+              "type": "boolean",
+              "description": "true při hrozícím pádu konstrukce či skla, rozbitém skle nebo polykarbonátu, jiskření nebo zápachu spáleniny u elektriky."
+            },
+            "shrnuti_pro_technika": {
+              "type": "string",
+              "description": "1-2 věty pro kolegu: co se stalo a co bude potřeba."
+            },
+            "telefon_jine": {
+              "type": "string",
+              "description": "Jiné číslo pro zpětné volání, jen když si ho zákazník výslovně přeje nebo je jeho číslo skryté. Jinak prázdné."
+            },
+            "nazev_produktu": {
+              "type": "string",
+              "description": "Název nebo model výrobku, např. POLLUX. Jinak prázdné."
+            },
+            "cislo_objednavky": {
+              "type": "string",
+              "description": "Číslo objednávky nebo faktury. Jinak prázdné."
+            },
+            "datum_prevzeti": {
+              "type": "string",
+              "description": "Kdy byl výrobek dodán nebo namontován, měsíc a rok. Jinak prázdné."
+            },
+            "kdy_zjisteno": {
+              "type": "string",
+              "description": "Kdy zákazník vadu zjistil, jeho slovy. Jinak prázdné."
+            },
+            "technicke_detaily": {
+              "type": "string",
+              "description": "Odpovědi na doplňující otázky k závadě. Jinak prázdné."
+            },
+            "dostupnost": {
+              "type": "string",
+              "description": "Kdy je zákazník k zastižení. Jinak prázdné."
+            },
+            "ma_fotografie": {
+              "type": "boolean",
+              "description": "true, když zákazník má nebo pořídí fotky závady."
+            },
+            "poskozeni_zapsano_u_ridice": {
+              "type": "boolean",
+              "description": "true, jen když zákazník výslovně řekl, že poškození při převzetí zapsal řidiči."
+            },
+            "poznamka": {
+              "type": "string",
+              "description": "Cokoli dalšího podstatného. Jinak prázdné."
+            }
+          },
+          "required": [
+            "jmeno_prijmeni",
+            "adresa_ulice_cp",
+            "adresa_mesto",
+            "adresa_psc",
+            "typ_pozadavku",
+            "typ_produktu",
+            "popis_zavady",
+            "priorita",
+            "bezpecnostni_riziko",
+            "shrnuti_pro_technika"
+          ]
+        }
+      }
+    },
+    {
+      "type": "endCall",
+      "function": {
+        "name": "ukoncit_hovor",
+        "description": "Ukončí hovor. Volej až po rozloučení, nikdy uprostřed věty zákazníka."
+      },
+      "messages": [
+        {
+          "type": "request-start",
+          "content": "Děkuji za zavolání a přeji hezký den. Na shledanou."
+        }
+      ]
+    }
+  ]
+}

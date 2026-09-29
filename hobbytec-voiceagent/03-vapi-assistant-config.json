@@ -1,0 +1,183 @@
+{
+  "_comment": "Konfigurace VAPI asistenta pro Hobbytec. Ty si asistenta DUPLIKUJEŠ z LOMAXu, takže většina je hotová - tenhle soubor slouží jako kontrolní seznam, co má být nastaveno. Do model.messages[0].content vlož CELÝ 01-system-prompt.md.",
+  "name": "Hobbytec – Reklamace (CZ)",
+  "firstMessage": "Dobrý den, tady Markéta z reklamačního oddělení Hobytek. Jak vám můžu pomoci?",
+  "firstMessageMode": "assistant-speaks-first",
+  "model": {
+    "provider": "anthropic",
+    "model": "claude-haiku-4-5",
+    "_poznamka_model": "claude-haiku-4-5 je odladěné jako nejrychlejší/nejlevnější použitelná volba pro servisní linku (viz LOMAX). Sonnet jsme zkoušeli u LOMAXu a byl POMALEJŠÍ i dražší, ne rychlejší - nepřepínej na něj jako na 'lepší' řešení latence.",
+    "temperature": 0.3,
+    "maxTokens": 1500,
+    "_poznamka_maxtokens": "MUSÍ být 1500 (VAPI default je 100 a uřízne JSON s argumenty -> prázdná data). Po duplikaci z LOMAXu ZKONTROLUJ, že tam opravdu je.",
+    "emotionRecognitionEnabled": false,
+    "_poznamka_emotion": "Záměrně VYPNUTO. U LOMAXu jsme zjistili, že tahle funkce nikde v promptu není využívaná (žádné rozhodování na jejím základě), ale stojí extra latenci na každém tahu. Pokud bys chtěl/a v budoucnu podle emoce něco měnit v chování bota, zapni to zpátky - ale pak to real použij v promptu, jinak je to jen zbytečné zpomalení.",
+    "numFastTurns": 1,
+    "toolIds": [
+      "ID_NASTROJE_odeslat_reklamaci_hobbytec",
+      "ID_NASTROJE_ukoncit_hovor"
+    ],
+    "messages": [
+      {
+        "role": "system",
+        "content": ">>> SEM VLOZ CELY OBSAH SOUBORU 01-system-prompt.md <<<"
+      }
+    ],
+    "_poznamka_tools": "V duplikátu z LOMAXu je připojený LOMAX nástroj odeslat_servisni_poptavku - ODEBER HO, jinak by mohl posílat reklamace Hobbytec na LOMAX webhook."
+  },
+  "transcriber": {
+    "provider": "deepgram",
+    "model": "nova-3",
+    "language": "cs",
+    "smartFormat": false,
+    "numerals": false,
+    "endpointing": 500,
+    "confidenceThreshold": 0,
+    "_poznamka_endpointing": "500 ms, ne 300. Zákazník diktující číslice dělá mezi nimi pauzy delší než 300 ms - kratší endpointing rozseká jednu číselnou řadu na fragmenty. confidenceThreshold drž na 0.",
+    "_poznamka_cisla": "smartFormat i numerals MUSÍ být false, jinak si Deepgram sám 'opraví' diktované číslice na hezčí zápis a rozbije to."
+  },
+  "voice": {
+    "provider": "azure",
+    "voiceId": "cs-CZ-VlastaNeural",
+    "speed": 1.0,
+    "chunkPlan": {
+      "enabled": true,
+      "minCharacters": 30
+    }
+  },
+  "startSpeakingPlan": {
+    "waitSeconds": 0.5,
+    "smartEndpointingEnabled": true,
+    "transcriptionEndpointingPlan": {
+      "onPunctuationSeconds": 0.15,
+      "onNoPunctuationSeconds": 1.4,
+      "onNumberSeconds": 0.6
+    },
+    "_poznamka": "onNumberSeconds je klíčové – zákazník diktuje PSČ a čísla po skupinách a bot ho nesmí uprostřed přerušit."
+  },
+  "stopSpeakingPlan": {
+    "numWords": 2,
+    "voiceSeconds": 0.2,
+    "backoffSeconds": 1.0
+  },
+  "messagePlan": {
+    "idleMessages": [
+      "Jste tam ještě, prosím?",
+      "Slyšíme se?",
+      "Haló, potřebujete ještě něco?"
+    ],
+    "idleTimeoutSeconds": 9,
+    "idleMessageMaxSpokenCount": 2,
+    "silenceTimeoutMessage": "Zdá se, že se neslyšíme. Zkuste nám prosím zavolat znovu. Na shledanou."
+  },
+  "silenceTimeoutSeconds": 30,
+  "maxDurationSeconds": 900,
+  "backgroundSound": "off",
+  "backchannelingEnabled": false,
+  "backgroundDenoisingEnabled": true,
+  "modelOutputInMessagesEnabled": true,
+  "endCallFunctionEnabled": true,
+  "endCallMessage": "Děkuji za zavolání a přeji hezký den. Na shledanou.",
+  "endCallPhrases": [
+    "na shledanou",
+    "nashledanou",
+    "hezký den"
+  ],
+  "voicemailDetection": {
+    "provider": "vapi",
+    "backoffPlan": {
+      "startAtSeconds": 5,
+      "frequencySeconds": 5,
+      "maxRetries": 4
+    }
+  },
+  "voicemailMessage": "",
+  "analysisPlan": {
+    "summaryPlan": {
+      "enabled": true,
+      "messages": [
+        {
+          "role": "system",
+          "content": "Shrň telefonát v češtině do maximálně 4 vět: kdo volal, jakého výrobku se týká problém, jaká je závada a zda byl požadavek zapsán."
+        }
+      ]
+    },
+    "successEvaluationPlan": {
+      "enabled": true,
+      "rubric": "PassFail",
+      "messages": [
+        {
+          "role": "system",
+          "content": "Vyhodnoť jako PASS pouze pokud: (a) asistentka zjistila jméno, adresu a konkrétní popis závady, (b) údaje zrekapitulovala a zákazník je potvrdil, (c) byl zavolán nástroj odeslat_reklamaci_hobbytec a zákazník byl navedený poslat e-mailem fakturu, fotky a reklamační list. FAIL, pokud asistentka slíbila uznání reklamace, termín, cenu nebo konkrétní záruční lhůtu, nebo radila opravu konstrukce či elektriky."
+        }
+      ]
+    },
+    "structuredDataPlan": {
+      "enabled": true,
+      "_poznamka": "Záchranná síť: i kdyby model zapomněl zavolat nástroj, tahle data přijdou v end-of-call-report a nic se neztratí.",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "jmeno_prijmeni": {
+            "type": "string"
+          },
+          "telefon_jine": {
+            "type": "string"
+          },
+          "adresa_ulice_cp": {
+            "type": "string"
+          },
+          "adresa_mesto": {
+            "type": "string"
+          },
+          "adresa_psc": {
+            "type": "string"
+          },
+          "typ_pozadavku": {
+            "type": "string"
+          },
+          "typ_produktu": {
+            "type": "string"
+          },
+          "popis_zavady": {
+            "type": "string"
+          },
+          "priorita": {
+            "type": "string"
+          },
+          "bezpecnostni_riziko": {
+            "type": "boolean"
+          },
+          "pozadavek_zapsan": {
+            "type": "boolean",
+            "description": "true pouze pokud byl v hovoru skutečně zavolán nástroj odeslat_reklamaci_hobbytec"
+          },
+          "duvod_nezapsani": {
+            "type": "string",
+            "description": "Pokud zapsáno nebylo, jednou větou proč."
+          }
+        }
+      }
+    }
+  },
+  "serverMessages": [
+    "end-of-call-report",
+    "status-update"
+  ],
+  "_poznamka_server": "Server URL na úrovni asistenta nech PRÁZDNÉ. Nástroj má vlastní server.url. (I kdyby tam někdo dal stejnou adresu, Make scénář zprávy jiného typu než tool-calls ignoruje.)",
+  "artifactPlan": {
+    "recordingEnabled": true,
+    "transcriptPlan": {
+      "enabled": true,
+      "assistantName": "Markéta",
+      "userName": "Zákazník"
+    },
+    "_poznamka_gdpr": "Nahrávání hovoru je zpracování osobních údajů. Buď ho vypni (recordingEnabled: false), nebo doplň do firstMessage větu o nahrávání před ostrým provozem."
+  },
+  "compliancePlan": {
+    "hipaaEnabled": false,
+    "pciEnabled": false
+  },
+  "_poznamka_vyslovnost": "Firma se píše Hobbytec, ale v mluvených větách je schválně Hobytek (česká fonetika), aby to hlas nečetl anglicky. Po prvním hovoru si poslechni úvodní větu a kdyby zněla divně, uprav jen tenhle řetězec (a totéž pravidlo v promptu, sekce Jak mluvíš).",
+  "_poznamka_hlas_a_prepis": "Hlas Azure cs-CZ-VlastaNeural a přepis Deepgram nova-3 / cs (smartFormat a numerals VYPNUTO) přebíráš z LOMAXu, kde fungují správně. Neměň je."
+}
