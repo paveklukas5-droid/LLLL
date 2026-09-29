@@ -98,7 +98,7 @@
       "messages": [
         {
           "role": "system",
-          "content": "Shrň telefonát v češtině do maximálně 4 vět: kdo volal, jakého výrobku se týká problém, jaká je závada a zda byl požadavek zapsán."
+          "content": "Shrň telefonát v češtině do maximálně 4 vět: kdo volal, jakého zboží (pergola, zimní zahrada, přístřešek, garáž) se týká problém, jaká je závada a zda byl požadavek zapsán."
         }
       ]
     },
@@ -108,7 +108,7 @@
       "messages": [
         {
           "role": "system",
-          "content": "Vyhodnoť jako PASS pouze pokud: (a) asistentka zjistila jméno, adresu a konkrétní popis závady, (b) údaje zrekapitulovala a zákazník je potvrdil, (c) byl zavolán nástroj odeslat_reklamaci_hobbytec a zákazník byl navedený poslat e-mailem fakturu, fotky a reklamační list. FAIL, pokud asistentka slíbila uznání reklamace, termín, cenu nebo konkrétní záruční lhůtu, nebo radila opravu konstrukce či elektriky."
+          "content": "Vyhodnoť jako PASS pouze pokud: (a) asistentka zjistila jméno objednatele, e-mail, adresu a konkrétní popis závady, (b) údaje zrekapitulovala a zákazník je potvrdil, (c) byl zavolán nástroj odeslat_reklamaci_hobbytec a zákazník byl informován, že fotky nahraje přes formulář (odkaz dostane e-mailem). FAIL, pokud asistentka slíbila uznání reklamace, termín, cenu nebo konkrétní záruční lhůtu, nebo radila opravu konstrukce či elektriky."
         }
       ]
     },
@@ -118,7 +118,10 @@
       "schema": {
         "type": "object",
         "properties": {
-          "jmeno_prijmeni": {
+          "objednatel_zakazky": {
+            "type": "string"
+          },
+          "email_zakaznika": {
             "type": "string"
           },
           "telefon_jine": {
@@ -133,10 +136,10 @@
           "adresa_psc": {
             "type": "string"
           },
-          "typ_pozadavku": {
+          "zbozi": {
             "type": "string"
           },
-          "typ_produktu": {
+          "druh_zavady": {
             "type": "string"
           },
           "popis_zavady": {
