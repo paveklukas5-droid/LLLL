@@ -13,7 +13,7 @@ dashboardu (viz `06-vapi-navod.md` → Fáze 1-2) a reálný testovací hovor.
 
 | Soubor | K čemu |
 |---|---|
-| `01-system-prompt.md` | Celý systémový prompt — vlož do `model.messages[0].content`. **Začni tady, projdi si hlavně sekci 2 (bezpečnost/havárie).** |
+| `01-system-prompt.md` | Celý systémový prompt — vlož do `model.messages[0].content`. **Začni tady, projdi si hlavně sekci „HAVÁRIE".** |
 | `02-vapi-tools.json` | Definice nástrojů. Webhook je živě napojený na hotový Make scénář. |
 | `03-vapi-assistant-config.json` | Kompletní konfigurace asistenta. |
 | `04-make-scenar.md` | Jak funguje živý Make scénář, kam teď chodí e-mail, jak přepnout na produkci. |
@@ -29,7 +29,7 @@ dashboardu (viz `06-vapi-navod.md` → Fáze 1-2) a reálný testovací hovor.
 - Model: `claude-haiku-4-5`, `maxTokens: 1500`, `emotionRecognitionEnabled: false`
   — všechny poučení z LOMAX/OKNOTHERM (prázdné argumenty, latence) zabudované
   od první verze, ne dodatečně opravované.
-- **Nové oproti LOMAX/OKNOTHERM**: skutečná bezpečnostní eskalace v KROKU 2
+- **Nové oproti LOMAX/OKNOTHERM**: skutečná bezpečnostní eskalace (sekce „HAVÁRIE" v promptu)
   — u úniku plynu, ohně/jiskření elektroinstalace nebo praskající nosné
   konstrukce bot okamžitě nasměruje zákazníka na tísňovou linku (150/112),
   ještě před jakýmkoli sběrem dat pro reklamaci. Tohle je citlivější věc

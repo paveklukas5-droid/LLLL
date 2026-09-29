@@ -107,7 +107,7 @@
             },
             "technicke_detaily": {
               "type": "string",
-              "description": "Odpovědi na diagnostické otázky specifické pro danou oblast domu (viz sekce 5 promptu). Jinak prázdný řetězec."
+              "description": "Odpovědi na diagnostické otázky specifické pro danou oblast domu (viz Diagnostické otázky v promptu). Jinak prázdný řetězec."
             },
             "kdy_zacalo": {
               "type": "string",
