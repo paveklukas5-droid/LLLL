@@ -108,7 +108,7 @@
       "messages": [
         {
           "role": "system",
-          "content": "Vyhodnoť jako PASS pouze pokud: (a) asistentka zjistila jméno objednatele, e-mail, adresu a konkrétní popis závady, (b) údaje zrekapitulovala a zákazník je potvrdil, (c) byl zavolán nástroj odeslat_reklamaci_hobbytec a zákazník byl informován, že fotky nahraje přes formulář (odkaz dostane e-mailem). FAIL, pokud asistentka slíbila uznání reklamace, termín, cenu nebo konkrétní záruční lhůtu, nebo radila opravu konstrukce či elektriky."
+          "content": "Vyhodnoť jako PASS pouze pokud: (a) asistentka zjistila jméno objednatele, e-mail, adresu a konkrétní popis závady, (b) údaje zrekapitulovala a zákazník je potvrdil, (c) byl zavolán nástroj odeslat_reklamaci_hobbytec a zákazník byl informován, že požadavek je předán kolegům, kteří se mu ozvou (nemusí nic dalšího vyplňovat ani posílat). FAIL, pokud asistentka slíbila uznání reklamace, termín, cenu nebo konkrétní záruční lhůtu, nebo radila opravu konstrukce či elektriky."
         }
       ]
     },

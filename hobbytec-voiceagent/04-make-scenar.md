@@ -2,31 +2,32 @@
 
 - **Scénář** `hobbytec reklamace voicebot`, id `7683216`, tým 874621, aktivní.
 - **Webhook** id `3809718`, URL `https://hook.eu1.make.com/ssnb30pw999uogzkqjfac8mvq6nec1u3` (už je v `02-vapi-tools.json`).
-- **Datová struktura webhooku** `VAPI Hobbytec reklamace` (id `607535`), vygenerovaná ze **stejného seznamu polí** jako JSON nástroje, takže se nemůžou rozejít (to byla příčina prázdných e-mailů u LOMAXu). Obsahuje i `toolCallList` a `artifact.messages`.
+- **Datová struktura webhooku** `VAPI Hobbytec reklamace` (id `607535`), vygenerovaná ze **stejného seznamu polí** jako JSON nástroje, takže se nemůžou rozejít (to byla příčina prázdných e-mailů u LOMAXu). Obsahuje i `toolCallList` a `artifact.messages` (nevadí).
+
+## Princip
+
+Bot **celou reklamaci zapíše sám**. Zákazník po hovoru nic nevyplňuje ani neposílá. Nikdo mu neodchází žádný e-mail. Když má fotky nebo video, vyžádá si je reklamační tým sám.
+
+**GDPR:** do e-mailu se nedává, co zákazník v hovoru řekl (žádný přepis, žádné citace). Jsou v něm jen strukturované údaje, které zákazník sám poskytl pro reklamaci.
 
 ## Jak to funguje
 
 1. **Webhook** přijme zprávu z VAPI.
 2. **Filtr:** pokračuje jen `message.type = tool-calls`. Cokoli jiného (end-of-call-report, status-update) se zastaví.
-3. **Modul 3** vytáhne všechna pole. Každé má **záložní zdroj**: když `toolCalls[1].function.arguments` chybí, vezme se `toolCallList[1].arguments`.
-4. **Modul 5** spočítá: číslo záznamu `HT-RRRRMMDD-XXXXXX`, telefon (jiné číslo, jinak číslo volajícího), čitelné texty (zboží, druh závady, priorita), **`email_ok`** (e-mail zákazníka obsahuje zavináč), **`prazdna_data`** (objednatel i popis závady prázdné = `ano`) a **`zaloha_text`** (všechno, co zákazník v hovoru řekl, z `artifact.messages`, role `user`; systémový prompt se tam nedostane).
-5. **Router, 5 větví:**
-   - data v pořádku → **e-mail kolegům** s odpověďmi **seřazenými jako v jejich formuláři** (E-mail, Objednatel zakázky, Adresa, Telefon, Číslo smlouvy / ID zakázky, Datum prodeje, Označení zboží, Druh závady, Popis závady, Foto / video) + „Navíc z hovoru" + záloha z hovoru,
-   - data v pořádku a e-mail zákazníka platný → **e-mail zákazníkovi** s tlačítkem na oficiální Google formulář, kde nahraje fotky nebo video (formulář je vyžaduje a po telefonu nejdou). Je v něm jen zboží, druh závady a popis, **ne adresa ani telefon**, aby při špatně rozpoznaném e-mailu neunikly osobní údaje,
-   - data v pořádku → **odpověď VAPI** s úspěchem (říká botovi, jestli e-mail s formulářem odešel),
-   - data prázdná → **e-mail „[PRÁZDNÁ DATA]"** s telefonem volajícího a tím, co zákazník řekl,
-   - data prázdná → **odpověď VAPI s chybou**. Bot dostane `error`, VAPI řekne „zkusím to ještě jednou" a **model nástroj zavolá znovu** (prompt to říká). Zákazník prázdný záznam nepozná.
+3. **Modul 3** vytáhne všech 19 polí. Každé má **záložní zdroj**: když `toolCalls[1].function.arguments` chybí, vezme se `toolCallList[1].arguments`. Booleany se převedou na „Ano"/„Ne".
+4. **Modul 5** spočítá: číslo záznamu `HT-RRRRMMDD-XXXXXX`, telefon (jiné číslo, jinak číslo volajícího), adresu v jednom řádku, čitelné texty (zboží, druh závady, priorita) a **`prazdna_data`** (objednatel i popis závady prázdné = `ano`).
+5. **Router, 4 větve:**
+   - data v pořádku → **e-mail reklamačnímu oddělení** s odpověďmi **seřazenými jako v jejich formuláři** (E-mail, Objednatel zakázky, Adresa, Telefon, Číslo smlouvy / ID zakázky, Datum prodeje, Označení zboží, Druh závady, Popis závady) + blok „Navíc z hovoru" (model, kdy zjištěno, dostupnost, fotky ano/ne, poznámka, shrnutí pro technika). **Červený pruh jen při bezpečnostním riziku.** Žádný modrý ani žlutý pruh, žádný přepis hovoru.
+   - data v pořádku → **odpověď VAPI** s úspěchem. Bot dostane pokyn říct, že se kolegové ozvou na telefon a případné fotky si vyžádají sami.
+   - data prázdná → **e-mail „[PRÁZDNÁ DATA]"** jen s telefonem volajícího a časem hovoru (bez přepisu).
+   - data prázdná → **odpověď VAPI s chybou** (`error`). VAPI řekne „zkusím to ještě jednou" a **model nástroj zavolá znovu** (prompt to říká). Zákazník prázdný záznam nepozná.
 
-**Proč:** už třikrát přišla prázdná data z VAPI. Teď se to (1) automaticky opraví druhým pokusem, (2) když ani to nepomůže, kolegové dostanou telefon a věty zákazníka, takže se žádný hovor neztratí.
+**Proč:** už třikrát přišla prázdná data z VAPI. Teď se to (1) automaticky opraví druhým pokusem, (2) když ani to nepomůže, kolegové dostanou alespoň telefon volajícího, takže se hovor neztratí.
 
 ## Kam chodí e-maily
 
-- **Kolegům** (moduly 8 a 9): zatím jen `paveklukas5@gmail.com`. Před ostrým provozem přepiš na adresu reklamačního oddělení Hobbytec.
-- **Zákazníkovi** (modul 11): na adresu, kterou zákazník nadiktoval. Odesílatelem je připojený Gmail (chatbotique). Pro ostrý provoz je lepší odesílat z domény Hobbytec; modul jde i vypnout, pokud to klient nechce.
-
-## Proč nejde formulář odeslat automaticky
-
-Make umí Google formulář za zákazníka odeslat přímo, jenže jejich formulář má **povinné nahrání souboru** a to Google dovolí jen přihlášenému uživateli. Proto vedeme zákazníka do formuláře e-mailem.
+- **Reklamačnímu oddělení** (moduly 8 a 9): zatím jen `paveklukas5@gmail.com`. Před ostrým provozem přepiš na adresu reklamačního oddělení Hobbytec. Odesílatelem je připojený Gmail (chatbotique); pro ostrý provoz je lepší odesílat z domény Hobbytec.
+- **Zákazníkovi:** nic.
 
 ## Co jsem nemohl ověřit
 
@@ -36,4 +37,4 @@ Data store jako další zálohu jsem zkusil, ale účet Make nemá volné úlož
 
 ## Když budeš přidávat pole
 
-Přidej ho na **třech místech**: JSON nástroje (`05-parametry.json`), datová struktura webhooku (id 607535) a modul 3 ve scénáři. Jinak bude v e-mailu prázdné, i když ho VAPI pošle.
+Přidej ho na **třech místech**: JSON nástroje (`05-parametry.json`), datová struktura webhooku (id 607535) a modul 3 ve scénáři (plus případně řádek v e-mailu). Jinak bude v e-mailu prázdné, i když ho VAPI pošle.
