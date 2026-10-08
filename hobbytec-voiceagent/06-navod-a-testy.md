@@ -6,7 +6,7 @@ Jejich **oficiální reklamační formulář** (Google Forms) má tyto otázky. 
 
 | Otázka formuláře | Povinná | Pole nástroje |
 |---|---|---|
-| E-mail | ano | `email_zakaznika` |
+| E-mail | ano | **bot se neptá** (na přání klienta), `email_zakaznika` jde prázdný; kolegové se ozývají na telefon |
 | Objednatel zakázky | ano | `objednatel_zakazky` |
 | Adresa | ne | `adresa_ulice_cp`, `adresa_mesto`, `adresa_psc` |
 | Telefon | ne | z čísla volajícího, případně `telefon_jine` |
@@ -59,7 +59,7 @@ Pokud už nástroj máš vytvořený z dřívější verze, **Parameters se nezm
 ## 4. Ověření, že data fakt chodí
 
 **A) Kontrola Make** (poslal jsem testovací požadavky do `paveklukas5@gmail.com`). Starší testovací e-maily Hobbytec z předchozích verzí smaž (mají modrý/žlutý pruh nebo „Co zákazník řekl"). Nové mají být **2**:
-- **E-mail kolegům** `[PŘEDNOSTNÍ] Hobbytec HT-… - Pergola - Husťopeče`: tabulka v pořadí formuláře (E-mail, Objednatel, Adresa, Telefon, Číslo smlouvy, Datum prodeje, Označení zboží, Druh závady, Popis závady) + „Navíc z hovoru". **Bez přepisu hovoru, bez modrého a žlutého pruhu.** Červený pruh jen u bezpečnostního rizika.
+- **E-mail kolegům** `[PŘEDNOSTNÍ] Hobbytec HT-… - Pergola - Husťopeče`: tabulka v pořadí formuláře (Objednatel, Adresa, Telefon, Číslo smlouvy, Datum prodeje, Označení zboží, Druh závady, Popis závady) + „Navíc z hovoru". **Bez přepisu hovoru, bez modrého a žlutého pruhu.** Červený pruh jen u bezpečnostního rizika.
 - **`[PRÁZDNÁ DATA] Hobbytec - hovor od …`** jen s telefonem volajícího a časem, **bez vět zákazníka**.
 - **Žádný e-mail zákazníkovi** s odkazem na formulář nepřijde.
 
@@ -72,13 +72,13 @@ Když něco z toho nesedí, napiš mi, co přišlo.
 
 ## 5. Testovací hovory (aspoň těchto 7)
 
-1. **Vada pergoly:** „Lamela pergoly se nezavírá." → bezpečnostní otázka, doptání, údaje **včetně e-mailu (přečte ho zpět)**, rekapitulace, zapsání. Bot řekne, že je to předané kolegům a **nic dalšího zákazník nevyplňuje**.
+1. **Vada pergoly:** „Lamela pergoly se nezavírá." → bezpečnostní otázka, doptání, údaje (**na e-mail se neptá**), rekapitulace, zapsání. Bot řekne, že je to předané kolegům a **nic dalšího zákazník nevyplňuje**.
 2. **Poškozená zásilka:** „Zahradní domek přišel s rozbitým dílem." → druh „poškozené", ptá se na zápis u řidiče, priorita vysoká, řekne o dvou pracovních dnech přepravci.
 3. **Bezpečnost:** „Uvolnila se konstrukce a hrozí pád skla." → pokyn nechodit tam, `bezpecnostni_riziko` true, v e-mailu červený pruh.
 4. **Nesmysly:** datum prodeje v budoucnosti, vymyšlená obec, směrovací číslo, které k obci nesedí → doptá se, neodkývá.
 5. **Bez čísla smlouvy:** dvakrát špatně nadiktované číslo → po druhém pokusu jde dál.
 6. **Vrácení zboží:** „Chci vrátit zboží do čtrnácti dnů." → **nástroj nevolá**, řekne, ať napíše na info e-mail s formulářem pro vrácení.
-7. **Fotky / e-mail:** „Mám fotky." → bot řekne, že si je kolegové případně vyžádají sami, a **neposílá zákazníka nic vyplňovat**. Pak e-mail: nadiktuj ho se slovy „zavináč" a „tečka cé zet", jednou oprav při zpětném přečtení; pak dvakrát úplně špatně → bot ho nechá prázdný a řekne, že se ozvou na telefon.
+7. **Fotky a opravy:** „Mám fotky." → bot řekne, že si je kolegové případně vyžádají sami. Na začátku oprav jméno nebo obec → v rekapitulaci musí zaznít **opravená** verze. Směrovací číslo dvakrát nesrozumitelně → bot jde dál („kolega ho dohledá").
 
 Poslouchej: výslovnost „Hobytek", ženský rod celý hovor, čísla slovy, žádné „aha".
 

@@ -16,7 +16,7 @@ Asistentka **Markéta** pro Hobbytec (výrobce hliníkových pergol, zimních za
 
 ## Co je jiné oproti ostatním projektům
 
-- **Pole jsou 1:1 podle jejich oficiálního reklamačního formuláře** (E-mail, Objednatel, Adresa, Telefon, Číslo smlouvy, Datum prodeje, Zboží, Druh závady, Popis, Foto/video). Bot je zákazníkovi klade ve stejném pořadí.
+- **Pole jsou 1:1 podle jejich oficiálního reklamačního formuláře** (E-mail – bot se na něj neptá, Objednatel, Adresa, Telefon, Číslo smlouvy, Datum prodeje, Zboží, Druh závady, Popis, Foto/video). Bot je zákazníkovi klade ve stejném pořadí.
 - **Bot reklamaci zapíše celou sám.** Zákazník po hovoru nic nevyplňuje ani neposílá, žádný e-mail zákazníkovi nechodí. Foto/video po telefonu nejde, takže si je případně vyžádá reklamační tým.
 - **GDPR:** e-mail kolegům neobsahuje přepis ani citace hovoru, jen strukturované údaje. Bez modrého a žlutého pruhu (červený jen při bezpečnostním riziku).
 - **Vrácení zboží** není reklamace: bot nástroj nevolá a odkáže na info e-mail.
