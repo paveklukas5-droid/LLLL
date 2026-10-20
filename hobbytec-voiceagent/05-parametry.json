@@ -1,0 +1,112 @@
+{
+  "type": "object",
+  "properties": {
+    "objednatel_zakazky": {
+      "type": "string",
+      "description": "Jméno a příjmení objednatele zakázky (kupujícího)."
+    },
+    "email_zakaznika": {
+      "type": "string",
+      "description": "E-mail zákazníka malými písmeny, např. jan.novak@seznam.cz. Prázdné, když ho nelze ověřit."
+    },
+    "adresa_ulice_cp": {
+      "type": "string",
+      "description": "Ulice a číslo popisné, kam byl výrobek dodán nebo kde je namontovaný."
+    },
+    "adresa_mesto": {
+      "type": "string",
+      "description": "Město nebo obec."
+    },
+    "adresa_psc": {
+      "type": "string",
+      "description": "Směrovací číslo, 5 číslic bez mezery."
+    },
+    "zbozi": {
+      "type": "string",
+      "enum": [
+        "pergola",
+        "zimni_zahrada",
+        "pristresek",
+        "garaz",
+        "ostatni"
+      ],
+      "description": "Označení reklamovaného zboží podle formuláře Hobbytec."
+    },
+    "druh_zavady": {
+      "type": "string",
+      "enum": [
+        "poskozene",
+        "nekompletni",
+        "nefunkcni",
+        "ostatni"
+      ],
+      "description": "poskozene = poškozené; nekompletni = chybí díly; nefunkcni = nefunguje; ostatni. Když platí víc, vyber převládající a zbytek napiš do popisu."
+    },
+    "popis_zavady": {
+      "type": "string",
+      "description": "Co je špatně, konkrétně a slovy zákazníka."
+    },
+    "priorita": {
+      "type": "string",
+      "enum": [
+        "vysoka",
+        "stredni",
+        "nizka"
+      ],
+      "description": "vysoka = bezpečnostní riziko nebo zásilka poškozená při převzetí; stredni = běžná vada; nizka = kosmetická drobnost."
+    },
+    "bezpecnostni_riziko": {
+      "type": "boolean",
+      "description": "true při hrozícím pádu konstrukce či skla, rozbitém skle nebo polykarbonátu, jiskření či zápachu spáleniny u elektriky."
+    },
+    "shrnuti_pro_technika": {
+      "type": "string",
+      "description": "1-2 věty pro kolegu: co se stalo a co bude potřeba."
+    },
+    "telefon_jine": {
+      "type": "string",
+      "description": "Jiné číslo pro zpětné volání, jen když si ho zákazník výslovně přeje nebo je jeho číslo skryté. Jinak prázdné."
+    },
+    "cislo_smlouvy_zakazky": {
+      "type": "string",
+      "description": "Číslo smlouvy nebo ID zakázky. Jinak prázdné."
+    },
+    "datum_prodeje": {
+      "type": "string",
+      "description": "Datum prodeje, případně měsíc a rok. Jinak prázdné."
+    },
+    "nazev_modelu": {
+      "type": "string",
+      "description": "Název nebo model výrobku, např. POLLUX. Jinak prázdné."
+    },
+    "kdy_zjisteno": {
+      "type": "string",
+      "description": "Kdy zákazník vadu zjistil, jeho slovy. Jinak prázdné."
+    },
+    "dostupnost": {
+      "type": "string",
+      "description": "Kdy je zákazník k zastižení. Jinak prázdné."
+    },
+    "ma_fotografie": {
+      "type": "boolean",
+      "description": "true, když zákazník má nebo pořídí fotky či video závady."
+    },
+    "poznamka": {
+      "type": "string",
+      "description": "Cokoli dalšího podstatného, např. poškození zapsáno řidiči. Jinak prázdné."
+    }
+  },
+  "required": [
+    "objednatel_zakazky",
+    "email_zakaznika",
+    "adresa_ulice_cp",
+    "adresa_mesto",
+    "adresa_psc",
+    "zbozi",
+    "druh_zavady",
+    "popis_zavady",
+    "priorita",
+    "bezpecnostni_riziko",
+    "shrnuti_pro_technika"
+  ]
+}

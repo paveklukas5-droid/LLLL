@@ -1,0 +1,116 @@
+{
+  "type": "object",
+  "properties": {
+    "jmeno_prijmeni": {
+      "type": "string",
+      "description": "Celé jméno a příjmení volajícího, tak jak ho nadiktoval. Např. 'Jan Novák'."
+    },
+    "adresa_ulice_cp": {
+      "type": "string",
+      "description": "Ulice a číslo popisné adresy REALIZACE (kde je produkt namontovaný), ne fakturační adresa."
+    },
+    "adresa_mesto": {
+      "type": "string",
+      "description": "Město / obec realizace."
+    },
+    "adresa_psc": {
+      "type": "string",
+      "description": "PSČ realizace, 5 číslic bez mezery. KLÍČOVÉ pro směrování na nejbližší pobočku."
+    },
+    "typ_pozadavku": {
+      "type": "string",
+      "enum": ["reklamace", "servis", "jine"],
+      "description": "reklamace = zákazník to sám nazývá reklamací nebo jde o vadu krátce po montáži; servis = běžná porucha, pozáruční seřízení; jine = např. urgence již podané reklamace."
+    },
+    "typ_produktu": {
+      "type": "string",
+      "enum": [
+        "plastova_okna",
+        "hlinikova_okna",
+        "drevena_okna",
+        "drevohlinikova_okna",
+        "vchodove_dvere",
+        "posuvne_dvere_hs_portal",
+        "stinici_technika",
+        "bioklimaticka_pergola",
+        "hlinikova_fasada",
+        "interierova_stena",
+        "jine"
+      ],
+      "description": "Kategorie produktu, kterého se závada týká."
+    },
+    "popis_zavady": {
+      "type": "string",
+      "description": "Konkrétní popis závady vlastními slovy zákazníka. Ne 'nefunguje to', ale např. 'okno v obýváku jde těžko zavřít, drhne nahoře'."
+    },
+    "priorita": {
+      "type": "string",
+      "enum": ["vysoka", "stredni", "nizka"],
+      "description": "vysoka = bezpečnostní riziko nebo dům nelze zabezpečit (dveře nejdou zamknout, prasklé sklo); stredni = produkt nefunkční, ale bezpečný; nizka = kosmetická vada, hluk, drobnost."
+    },
+    "bezpecnostni_riziko": {
+      "type": "boolean",
+      "description": "true při prasklém/rozbitém skle, dveřích nebo okně, které nejdou zamknout, viditelně uvolněném či vypadávajícím rámu, jiskření nebo zápachu spáleniny u motoru."
+    },
+    "shrnuti_pro_technika": {
+      "type": "string",
+      "description": "1-2 věty pro technika: co se stalo a co si nejspíš bude potřebovat vzít s sebou."
+    },
+    "telefon_jine": {
+      "type": "string",
+      "description": "Alternativní telefonní číslo pro zpětné volání. Vyplň POUZE tehdy, když zákazník řekne, že se mu má kolega ozvat na JINÉ číslo, než ze kterého právě volá, nebo když je číslo volajícího skryté. Jinak prázdný řetězec - číslo volajícího se doplní automaticky z hovoru."
+    },
+    "material_provedeni": {
+      "type": "string",
+      "description": "Materiál produktu, pokud ho typ_produktu jednoznačně neurčuje (např. u dveří, portálů, fasády): plast, hliník, dřevo, dřevohliník. Jinak prázdný řetězec."
+    },
+    "rok_montaze": {
+      "type": "string",
+      "description": "Přibližný rok montáže, např. '2020'. Prázdný řetězec, pokud zákazník neví."
+    },
+    "cislo_zakazky": {
+      "type": "string",
+      "description": "Číslo zakázky / objednávky / faktury, pokud ho zákazník má. Jinak prázdný řetězec."
+    },
+    "kdo_montoval": {
+      "type": "string",
+      "description": "Kdo produkt montoval - OKNOTHERM, jiná firma, svépomocí, nebo prázdný řetězec."
+    },
+    "dostupnost": {
+      "type": "string",
+      "description": "Kdy je zákazník k zastižení / kdy se mu hodí návštěva technika. Např. 'všední dny odpoledne po 15:00'."
+    },
+    "technicke_detaily": {
+      "type": "string",
+      "description": "Odpovědi na diagnostické otázky: kde přesně to drhne, jde-li klika otočit celá, rosí-li se to mezi skly nebo v místnosti, bzučí-li motor apod. Jinak prázdný řetězec."
+    },
+    "kdy_zacalo": {
+      "type": "string",
+      "description": "Kdy se závada poprvé objevila, slovy zákazníka. Např. 'asi před týdnem', 'postupně poslední měsíc'."
+    },
+    "opakovana_zavada": {
+      "type": "boolean",
+      "description": "true, pokud zákazník uvedl, že se stejný problém už dříve řešil."
+    },
+    "ma_fotografie": {
+      "type": "boolean",
+      "description": "true, pokud zákazník uvedl, že fotografii závady má nebo ji pořídí a pošle."
+    },
+    "poznamka": {
+      "type": "string",
+      "description": "Cokoli dalšího podstatného: volající není majitel, název firmy/SVJ, urgence, zákazník si není jistý výrobcem, zajímá ho cena dopředu apod."
+    }
+  },
+  "required": [
+    "jmeno_prijmeni",
+    "adresa_ulice_cp",
+    "adresa_mesto",
+    "adresa_psc",
+    "typ_pozadavku",
+    "typ_produktu",
+    "popis_zavady",
+    "priorita",
+    "bezpecnostni_riziko",
+    "shrnuti_pro_technika"
+  ]
+}
