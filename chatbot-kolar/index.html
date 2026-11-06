@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Test chatbota – Václav Kolář, realitní makléř</title>
+<style>
+  :root { --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --bg:#f6f7f9; --accent:#1e293b; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; color:var(--ink); background:var(--bg); line-height:1.55; }
+  .badge { display:inline-block; font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#92400e; background:#fef3c7; border:1px solid #fde68a; padding:4px 10px; border-radius:999px; }
+  header { background:var(--accent); color:#fff; padding:48px 24px 40px; }
+  header .wrap, main { max-width:760px; margin:0 auto; }
+  h1 { margin:14px 0 8px; font-size:30px; line-height:1.2; }
+  header p { margin:0; color:#cbd5e1; font-size:17px; }
+  main { padding:32px 24px 120px; }
+  section { background:#fff; border:1px solid var(--line); border-radius:12px; padding:24px 26px; margin-bottom:20px; }
+  h2 { font-size:18px; margin:0 0 12px; }
+  ol, ul { margin:0; padding-left:20px; }
+  li { margin:8px 0; }
+  .q { font-weight:600; }
+  .exp { color:var(--muted); font-size:14px; display:block; }
+  .note { font-size:14px; color:var(--muted); }
+  .arrow { position:fixed; right:96px; bottom:34px; background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px 14px; font-size:14px; box-shadow:0 4px 14px rgba(15,23,42,.12); }
+  @media (max-width:600px){ .arrow{ display:none; } h1{ font-size:24px; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <span class="badge">Testovací stránka</span>
+    <h1>AI asistent Václava Koláře</h1>
+    <p>Zkušební verze chatbota pro web vaclavkolar.cz. Chat otevřete ikonou vpravo dole.</p>
+  </div>
+</header>
+<main>
+  <section>
+    <h2>Co zkusit</h2>
+    <ol>
+      <li><span class="q">„Chci prodat dům v Hořicích, kolik by mohl stát?“</span>
+        <span class="exp">Bot nesmí odhadnout cenu. Má hned nabídnout online odhad nebo předání Václavovi.</span></li>
+      <li><span class="q">„Proč Václav dělá jen exkluzivní smlouvy?“</span>
+        <span class="exp">Má vysvětlit „jeden je více než pět“ a NEnabízet kontakt.</span></li>
+      <li><span class="q">„Kolik stojí byt 3+1 v Hradci v Čajkovského ulici?“</span>
+        <span class="exp">Má odpovědět z aktuální nabídky na webu (cena, PENB) a nic si nedomýšlet.</span></li>
+      <li><span class="q">„Pronajímáte i byty?“</span>
+        <span class="exp">Pronájmy na webu nejsou – bot je nesmí slíbit, jen nabídne dotaz na Václava.</span></li>
+      <li><span class="q">Odmítněte nabídku kontaktu („zatím ne“)</span>
+        <span class="exp">Do konce konverzace už by neměl kontakt nabízet znovu.</span></li>
+      <li><span class="q">Odešlete poptávku (jméno + telefon nebo e-mail)</span>
+        <span class="exp">Bot poptávku odešle a potvrdí. Do jména prosím napište „TEST“, ať je jasné, že nejde o skutečného klienta.</span></li>
+    </ol>
+  </section>
+  <section>
+    <h2>Dobré vědět</h2>
+    <ul class="note">
+      <li>Jde o zkušební nasazení, stránka není součástí webu vaclavkolar.cz.</li>
+      <li>Odeslané testovací poptávky chodí na interní testovací e-mail, ne Václavovi.</li>
+      <li>Připomínky si prosím zapisujte i s přesným zněním otázky – podle toho se ladí prompt.</li>
+    </ul>
+  </section>
+</main>
+<div class="arrow">Chat je tady ↘</div>
+
+<script type="text/javascript">
+  (function(d, t) {
+      var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
+      v.onload = function() {
+        window.voiceflow.chat.load({
+          verify: { projectID: '6aecd63d846171f210e2786b' },
+          url: 'https://general-runtime.voiceflow.com',
+          voice: {
+            url: 'https://runtime-api.voiceflow.com'
+          }
+        });
+      }
+      v.src = 'https://cdn.voiceflow.com/widget-next/bundle.mjs'; v.type = 'text/javascript'; s.parentNode.insertBefore(v, s);
+  })(document, 'script');
+</script>
+</body>
+</html>
