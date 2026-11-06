@@ -1,0 +1,133 @@
+<!-- Chatbot Václava Koláře (Voiceflow) + pop-up bublina. Vložte těsně před </body>. -->
+<script type="text/javascript">
+  (function(d, t) {
+      var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
+      v.onload = function() {
+        window.voiceflow.chat.load({
+          verify: { projectID: '6aecd63d846171f210e2786b' },
+          url: 'https://general-runtime.voiceflow.com',
+          voice: {
+            url: "https://runtime-api.voiceflow.com"
+          }
+        }).then(function() {
+
+          var POPUP_TEXT = '👋 Dobrý den! Chcete prodat nemovitost nebo zjistit její cenu? Zeptejte se mě.';
+          var POPUP_DELAY = 4000;
+          var STORAGE_KEY = 'vfKolarPopupDismissedAt';
+          var HODIN_DO_DALSIHO_ZOBRAZENI = 24;
+
+          var chatOpened = false;
+
+          function bylaNedavnoZavrena() {
+            try {
+              var t2 = localStorage.getItem(STORAGE_KEY);
+              return !!t2 && (Date.now() - Number(t2)) < HODIN_DO_DALSIHO_ZOBRAZENI * 3600 * 1000;
+            } catch (e) { return false; }
+          }
+          function oznacitJakoZavrenou() {
+            try { localStorage.setItem(STORAGE_KEY, String(Date.now())); } catch (e) {}
+          }
+          function removeBubble() {
+            var b = d.getElementById('vf-custom-popup');
+            if (b) b.remove();
+          }
+
+          // ---- Detekce otevření chatu — tři nezávislé cesty najednou ----
+          // 1) oficiální událost, když existuje
+          try {
+            window.voiceflow.chat.on('open', function() {
+              chatOpened = true;
+              removeBubble();
+              oznacitJakoZavrenou();
+            });
+            window.voiceflow.chat.on('close', function() {
+              chatOpened = false;
+            });
+          } catch (e) {}
+
+          // 2) klik kamkoli do widgetu (i na samotnou ikonu launcheru)
+          d.addEventListener('click', function(e) {
+            if (e.target && (e.target.id === 'voiceflow-chat' || e.target.closest('#voiceflow-chat'))) {
+              chatOpened = true;
+              removeBubble();
+              oznacitJakoZavrenou();
+            }
+          }, true);
+
+          // 3) záložní kontrola výšky rámu — pro případ, že .on() ani klik nechytí
+          setInterval(function() {
+            var frame = d.getElementById('voiceflow-chat-frame');
+            var open = frame && frame.offsetHeight > 150;
+            if (open && !chatOpened) {
+              chatOpened = true;
+              removeBubble();
+              oznacitJakoZavrenou();
+            } else if (!open) {
+              chatOpened = false;
+            }
+          }, 700);
+
+          // ---- Pop-up bublina ----
+          if (bylaNedavnoZavrena()) return;
+
+          setTimeout(function() {
+            if (chatOpened) return;
+            var frame = d.getElementById('voiceflow-chat-frame');
+            if (frame && frame.offsetHeight > 150) return;
+
+            var bubble = d.createElement('div');
+            bubble.id = 'vf-custom-popup';
+            bubble.setAttribute('role', 'button');
+            bubble.setAttribute('tabindex', '0');
+            bubble.setAttribute('aria-label', 'Otevřít chat');
+            bubble.innerHTML = POPUP_TEXT +
+              '<span id="vf-close-popup" aria-label="Zavřít" style="position:absolute;top:4px;right:10px;width:20px;height:20px;font-size:18px;color:#94a3b8;font-family:Arial,sans-serif;font-weight:bold;line-height:1;cursor:pointer;">&times;</span>' +
+              '<span style="position:absolute;bottom:-8px;right:24px;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid #172638;"></span>';
+
+            bubble.style.cssText =
+              'position:fixed;right:24px;bottom:calc(100px + env(safe-area-inset-bottom, 0px));' +
+              'max-width:270px;background:#172638;color:#ffffff;padding:14px 38px 14px 16px;' +
+              'border-radius:14px 14px 4px 14px;font:400 14px/1.5 "Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;' +
+              'box-shadow:0 8px 24px rgba(0,0,0,.18);cursor:pointer;z-index:999998;' +
+              'opacity:0;transform:translateY(8px);transition:opacity .35s ease, transform .35s ease;';
+
+            if (window.innerWidth <= 480) {
+              bubble.style.left = '12px';
+              bubble.style.right = '12px';
+              bubble.style.maxWidth = 'none';
+              bubble.style.bottom = 'calc(84px + env(safe-area-inset-bottom, 0px))';
+              bubble.style.borderRadius = '14px 14px 14px 4px';
+            }
+
+            d.body.appendChild(bubble);
+
+            setTimeout(function() {
+              if (!chatOpened) {
+                bubble.style.opacity = '1';
+                bubble.style.transform = 'translateY(0)';
+              }
+            }, 20);
+
+            var closeBtn = bubble.querySelector('#vf-close-popup');
+            closeBtn.onmouseover = function() { this.style.color = '#ffffff'; };
+            closeBtn.onmouseout = function() { this.style.color = '#94a3b8'; };
+            closeBtn.onclick = function(e) {
+              e.stopPropagation();
+              removeBubble();
+              oznacitJakoZavrenou();
+            };
+            bubble.onclick = function() {
+              window.voiceflow.chat.open();
+              removeBubble();
+              oznacitJakoZavrenou();
+            };
+            bubble.onkeydown = function(e) {
+              if (e.key === 'Enter' || e.key === ' ') bubble.click();
+            };
+          }, POPUP_DELAY);
+
+        });
+      }
+      v.src = "https://cdn.voiceflow.com/widget-next/bundle.mjs"; v.type = "text/javascript"; s.parentNode.insertBefore(v, s);
+  })(document, 'script');
+</script>
